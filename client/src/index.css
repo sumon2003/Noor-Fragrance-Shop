@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Full-page goldish premium background */
+body {
+  background:
+    radial-gradient(1200px 650px at 15% 10%, rgba(212,175,55,0.18), transparent 60%),
+    radial-gradient(900px 500px at 85% 20%, rgba(255, 205, 120, 0.10), transparent 55%),
+    radial-gradient(1000px 700px at 50% 80%, rgba(212,175,55,0.08), transparent 60%),
+    linear-gradient(180deg, #070707 0%, #0b0b0b 45%, #070707 100%);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}

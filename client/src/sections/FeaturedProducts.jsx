@@ -15,7 +15,17 @@ function SkeletonCard() {
   );
 }
 
-export default function FeaturedProducts({ selectedCategory = "All" }) {
+function normalize(s) {
+  return (s || "").toString().toLowerCase().trim();
+}
+
+export default function FeaturedProducts({
+  selectedCategory = "All",
+  search = "",
+  onSearchChange,
+  sort = "default",
+  onSortChange,
+}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -43,34 +53,92 @@ export default function FeaturedProducts({ selectedCategory = "All" }) {
     };
   }, []);
 
-  // ✅ category filtering
+  // category + search filter
   const filtered = useMemo(() => {
-    if (selectedCategory === "All") return items;
+    const q = normalize(search);
 
-    const target = selectedCategory.toLowerCase();
     return items.filter((p) => {
-      const c = (p?.category || "").toString().toLowerCase().trim();
-      return c === target;
+      // category match
+      const c = normalize(p?.category);
+      const categoryOk =
+        selectedCategory === "All" || c === normalize(selectedCategory);
+
+      if (!categoryOk) return false;
+
+      if (!q) return true;
+
+      // search match: name/category/description
+      const name = normalize(p?.name);
+      const desc = normalize(p?.description);
+      const cat = normalize(p?.category);
+
+      return name.includes(q) || desc.includes(q) || cat.includes(q);
     });
-  }, [items, selectedCategory]);
+  }, [items, selectedCategory, search]);
+
+  // sorting
+  const visible = useMemo(() => {
+    const arr = [...filtered];
+
+    if (sort === "price_asc") {
+      arr.sort((a, b) => Number(a?.price || 0) - Number(b?.price || 0));
+    } else if (sort === "price_desc") {
+      arr.sort((a, b) => Number(b?.price || 0) - Number(a?.price || 0));
+    } else if (sort === "name_asc") {
+      arr.sort((a, b) => normalize(a?.name).localeCompare(normalize(b?.name)));
+    }
+
+    return arr;
+  }, [filtered, sort]);
 
   return (
     <section id="products" className="max-w-6xl mx-auto px-4 py-10">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
         <div>
-          <h2 className="text-xl font-semibold text-amber-50/90">Featured Products</h2>
+          <h2 className="text-xl font-semibold text-amber-50/90">
+            Featured Products
+          </h2>
           <p className="text-sm text-amber-50/55 mt-1">
-            Showing:{" "}
-            <span className="text-amber-200 font-semibold">{selectedCategory}</span>
+            Category:{" "}
+            <span className="text-amber-200 font-semibold">
+              {selectedCategory}
+            </span>
+            {search ? (
+              <>
+                {" "}
+                • Search:{" "}
+                <span className="text-amber-200 font-semibold">“{search}”</span>
+              </>
+            ) : null}
           </p>
         </div>
 
-        <a
-          href="#categories"
-          className="text-sm text-amber-200/70 hover:text-amber-200 transition"
-        >
-          Change category →
-        </a>
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          {/* Search */}
+          <div className="w-full sm:w-[320px]">
+            <input
+              value={search}
+              onChange={(e) => onSearchChange?.(e.target.value)}
+              placeholder="Search by name, category, or description..."
+              className="w-full px-4 py-3 rounded-2xl bg-black/30 text-amber-50/85 placeholder:text-amber-100/25 ring-1 ring-amber-300/12 focus:ring-amber-300/35 outline-none transition"
+            />
+          </div>
+
+          {/* Sort */}
+          <div className="w-full sm:w-[220px]">
+            <select
+              value={sort}
+              onChange={(e) => onSortChange?.(e.target.value)}
+              className="w-full px-4 py-3 rounded-2xl bg-black/30 text-amber-50/85 ring-1 ring-amber-300/12 focus:ring-amber-300/35 outline-none transition"
+            >
+              <option value="default">Sort: Default</option>
+              <option value="price_asc">Price: Low → High</option>
+              <option value="price_desc">Price: High → Low</option>
+              <option value="name_asc">Name: A → Z</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div className="mt-6">
@@ -87,16 +155,27 @@ export default function FeaturedProducts({ selectedCategory = "All" }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {loading
             ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-            : filtered.map((p) => <ProductCard key={p._id || p.id || p.name} product={p} />)}
+            : visible.map((p) => (
+                <ProductCard
+                  key={p._id || p.id || p.name}
+                  product={p}
+                />
+              ))}
         </div>
 
-        {!loading && !err && filtered.length === 0 ? (
+        {!loading && !err && visible.length === 0 ? (
           <div className="mt-6 rounded-3xl bg-white/5 ring-1 ring-amber-300/12 p-5 text-amber-50/70">
-            No products found for{" "}
-            <span className="text-amber-200 font-semibold">{selectedCategory}</span>.
+            No products match your filters.
             <div className="text-xs mt-2 text-amber-50/55">
-              Tip: MongoDB products এর category value ঠিকভাবে “Oud/Musk/Floral/Fresh/Spicy” কিনা চেক করুন।
+              Try: Category “All” or clear the search box.
             </div>
+          </div>
+        ) : null}
+
+        {!loading && !err ? (
+          <div className="mt-5 text-xs text-amber-50/50">
+            Showing <span className="text-amber-200">{visible.length}</span> of{" "}
+            <span className="text-amber-200">{items.length}</span> products
           </div>
         ) : null}
       </div>

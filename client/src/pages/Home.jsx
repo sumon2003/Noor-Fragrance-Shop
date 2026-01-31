@@ -11,6 +11,8 @@ import WhyChooseUs from "../sections/WhyChooseUs";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("default"); // default | price_asc | price_desc | name_asc
 
   return (
     <div className="min-h-screen text-amber-50/90 selection:bg-amber-300/30 selection:text-amber-50">
@@ -24,7 +26,13 @@ export default function Home() {
           onSelectCategory={(c) => setSelectedCategory(c)}
         />
 
-        <FeaturedProducts selectedCategory={selectedCategory} />
+        <FeaturedProducts
+          selectedCategory={selectedCategory}
+          search={search}
+          onSearchChange={setSearch}
+          sort={sort}
+          onSortChange={setSort}
+        />
 
         <WhyChooseUs />
       </main>

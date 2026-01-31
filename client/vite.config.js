@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [
-    tailwindcss(), // ⬅️ এটা না থাকলে Tailwind apply হবে না
+    tailwindcss(), 
     react()
   ],
   server: {

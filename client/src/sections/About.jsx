@@ -6,7 +6,7 @@ export default function About() {
           {/* Image */}
           <div className="relative h-[260px] md:h-full min-h-[320px]">
             <img
-              src="public/about2.jpg"
+              src="/about.png"
               alt="About Noor Attar"
               className="absolute inset-0 h-full w-full object-cover"
             />

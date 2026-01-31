@@ -8,7 +8,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Full-page goldish premium background */
 body {
   background:
     radial-gradient(1200px 650px at 15% 10%, rgba(212,175,55,0.18), transparent 60%),

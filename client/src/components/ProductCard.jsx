@@ -5,10 +5,8 @@ export default function ProductCard({ product }) {
   const category = product?.category || "Category";
   const price = product?.price ?? 0;
 
-  // free placeholder image (replace later with product.image)
-  const img =
-    product?.image ||
-    "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=75";
+  const img = product?.image || product?.imageUrl || "/images/fallback/default.jpg";
+
 
   return (
     <div className="group rounded-3xl bg-white/5 ring-1 ring-amber-300/10 hover:ring-amber-300/30 transition overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.35)]">

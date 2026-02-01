@@ -100,7 +100,7 @@ export default function Navbar() {
           <button
             type="button"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-b from-amber-300/25 to-amber-300/10 ring-1 ring-amber-300/30 hover:ring-amber-300/45 transition text-amber-50/90 text-sm"
-            onClick={() => alert("Cart feature coming next (Step 5)!")}
+            onClick={() => alert("Cart feature coming soon!")}
           >
             <ShoppingCart size={16} />
             Cart

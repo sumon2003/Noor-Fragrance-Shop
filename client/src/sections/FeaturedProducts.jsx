@@ -34,7 +34,7 @@ export default function FeaturedProducts({
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // controls state (only used when showControls=true)
+  // controls state 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("default"); // default | price_asc | price_desc | name_asc
 
@@ -69,7 +69,7 @@ export default function FeaturedProducts({
       const categoryOk = cat === "all" || pCat === cat;
       if (!categoryOk) return false;
 
-      // Home এ showControls=false হলে search ignore হবে
+      // search filter (only when controls on)
       if (!showControls) return true;
 
       const q = normalize(search);

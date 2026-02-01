@@ -1,41 +1,32 @@
 import mongoose from "mongoose";
 
+const variantSchema = new mongoose.Schema(
+  {
+    size: { type: String, required: true }, // 3ml, 6ml
+    price: { type: Number, required: true, min: 0 },
+    stock: { type: Number, default: 0, min: 0 },
+  },
+  { _id: true }
+);
+
 const productSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
+    name: { type: String, required: true },
+    slug: { type: String, required: true, unique: true },
     category: {
       type: String,
-      required: true,
       enum: ["Oud", "Musk", "Floral", "Fresh", "Spicy"],
-    },
-
-    price: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    description: {
-      type: String,
-      default: "",
-    },
-
-    // SINGLE IMAGE 
-    image: {
-      type: String,
       required: true,
     },
+    description: String,
+    image: { type: String, required: true },
 
-    stock: {
-      type: Number,
-      default: 0,
-      min: 0,
+    variants: {
+      type: [variantSchema],
+      validate: (v) => Array.isArray(v) && v.length > 0,
     },
+
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

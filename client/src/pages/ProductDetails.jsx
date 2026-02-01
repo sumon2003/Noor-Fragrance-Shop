@@ -132,7 +132,7 @@ export default function ProductDetails() {
                     onClick={() => setQty((q) => Math.max(1, q - 1))}
                     disabled={qty <= 1}
                   >
-                    −
+                    -
                   </button>
                   <div className="px-5 py-2 text-amber-50/85 min-w-[56px] text-center">
                     {qty}
@@ -166,7 +166,7 @@ export default function ProductDetails() {
               </div>
 
               <div className="mt-6 text-xs text-amber-50/45">
-                Next step: Cart state + localStorage add করবো।
+                {/* Next step: Cart state + localStorage add করবো। */}
               </div>
             </div>
           </div>

@@ -1,5 +1,3 @@
-// client/src/services/product.service.js
-
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 // Frontend base (vite) - so local public images will work

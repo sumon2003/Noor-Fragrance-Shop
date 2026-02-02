@@ -1,17 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, ShoppingCart } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { fetchProductById } from "../services/product.service";
+import { useCart } from "../context/CartContext";
 
 function getMinPrice(variants = []) {
   const prices = variants.map((v) => Number(v?.price || 0)).filter((n) => n > 0);
   return prices.length ? Math.min(...prices) : 0;
 }
 
+// Image URL normalize helper
+function resolveImageUrl(image) {
+  if (!image) return "/images/fallback/default.jpg";
+
+  // already absolute (http/https)
+  if (/^https?:\/\//i.test(image)) return image;
+
+  // if starts with "/" => served from Vite public (client/public)
+  if (image.startsWith("/")) return image;
+
+  // otherwise make it absolute from public
+  return `/${image}`;
+}
+
 export default function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
@@ -20,6 +36,8 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
+  const { addToCart } = useCart();
+
   useEffect(() => {
     let alive = true;
 
@@ -27,6 +45,7 @@ export default function ProductDetails() {
       try {
         setLoading(true);
         setErr("");
+
         const data = await fetchProductById(id);
         if (!alive) return;
 
@@ -60,12 +79,41 @@ export default function ProductDetails() {
   const price = selectedVariant?.price ?? getMinPrice(variants);
   const stock = selectedVariant?.stock ?? 0;
 
-  const img = product?.image || "/images/fallback/default.jpg";
+  // correct image (works for /images/... or full URL)
+  const img = resolveImageUrl(product?.image || product?.imageUrl);
 
   const canAdd = !!selectedVariant && stock > 0 && qty >= 1 && qty <= stock;
 
   const onMinus = () => setQty((q) => Math.max(1, q - 1));
   const onPlus = () => setQty((q) => Math.min(stock || 99, q + 1));
+
+  // add to cart
+  const handleAddToCart = () => {
+    if (!product || !selectedVariant) return;
+
+    // Validate qty vs stock
+    const safeQty = Math.max(1, Math.min(qty, stock || 1));
+
+    addToCart({
+      productId: product._id,
+      // unique key for variant
+      variantId: `${product._id}_${selectedVariant.size}`,
+      qty: safeQty,
+      snapshot: {
+        _id: product._id,
+        name: product.name,
+        category: product.category,
+        description: product.description,
+        image: img,
+        size: selectedVariant.size,
+        price: Number(selectedVariant.price || 0),
+        stock: Number(selectedVariant.stock || 0),
+      },
+    });
+
+    // ✅ optionally go cart
+    // navigate("/cart");
+  };
 
   return (
     <div className="min-h-screen text-amber-50/90">
@@ -107,6 +155,9 @@ export default function ProductDetails() {
                   alt={product.name}
                   className="absolute inset-0 w-full h-full object-cover"
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/fallback/default.jpg";
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
                 <div className="absolute top-4 left-4 text-xs px-3 py-1.5 rounded-full bg-black/40 backdrop-blur ring-1 ring-amber-300/15">
@@ -221,28 +272,22 @@ export default function ProductDetails() {
                   disabled={!canAdd}
                   className="inline-flex justify-center items-center gap-2 px-5 py-3 rounded-2xl bg-amber-300 text-black font-semibold hover:bg-amber-200 transition disabled:opacity-40 disabled:hover:bg-amber-300"
                   type="button"
-                  onClick={() => {
-
-                    alert(
-                      `Added: ${product.name} (${selectedVariant?.size}) x${qty}`
-                    );
-                  }}
+                  onClick={handleAddToCart}
                 >
                   <ShoppingCart size={18} />
                   Add to Cart
                 </button>
 
-                <Link
-                  to="/products"
+                <button
+                  type="button"
+                  onClick={() => navigate("/products")}
                   className="inline-flex justify-center items-center px-5 py-3 rounded-2xl bg-white/5 ring-1 ring-amber-300/12 text-amber-50/80 hover:ring-amber-300/30 transition"
                 >
                   Continue Shopping
-                </Link>
+                </button>
               </div>
 
-              <div className="mt-6 text-xs text-amber-50/45">
-              {/*  */}
-              </div>
+              <div className="mt-6 text-xs text-amber-50/45">{/*  */}</div>
             </div>
           </div>
         )}

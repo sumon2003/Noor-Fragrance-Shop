@@ -48,7 +48,7 @@ export default function Navbar() {
               NOOR <span className="text-amber-300">ATTAR</span>
             </div>
             <div className="text-[11px] text-amber-200/60 tracking-[0.25em] uppercase">
-              Dark Premium
+              Premium Fragrance
             </div>
           </div>
         </Link>
@@ -62,7 +62,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => goToSection("#about")}
-            className="text-amber-50/70 hover:text-amber-200 transition"
+            className="cursor-pointer text-amber-50/70 hover:text-amber-200 transition"
           >
             About
           </button>
@@ -70,7 +70,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => goToSection("#categories")}
-            className="text-amber-50/70 hover:text-amber-200 transition"
+            className="cursor-pointer text-amber-50/70 hover:text-amber-200 transition"
           >
             Categories
           </button>

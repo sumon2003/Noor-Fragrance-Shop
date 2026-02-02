@@ -5,6 +5,7 @@ const categories = [
   { name: "Floral", hint: "Elegant notes" },
   { name: "Fresh", hint: "Daily wear" },
   { name: "Spicy", hint: "Bold vibe" },
+  { name: "Woody", hint: "Earthy & warm" }
 ];
 
 export default function Categories({ selectedCategory, onSelectCategory }) {

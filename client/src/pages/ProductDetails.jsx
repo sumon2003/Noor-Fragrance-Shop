@@ -1,16 +1,22 @@
-// client/src/pages/ProductDetails.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ShoppingCart, ChevronLeft } from "lucide-react";
+import { ChevronLeft, ShoppingCart } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { fetchProductById } from "../services/product.service";
+
+function getMinPrice(variants = []) {
+  const prices = variants.map((v) => Number(v?.price || 0)).filter((n) => n > 0);
+  return prices.length ? Math.min(...prices) : 0;
+}
 
 export default function ProductDetails() {
   const { id } = useParams();
 
   const [product, setProduct] = useState(null);
+  const [selectedVariantId, setSelectedVariantId] = useState("");
   const [qty, setQty] = useState(1);
+
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -23,7 +29,12 @@ export default function ProductDetails() {
         setErr("");
         const data = await fetchProductById(id);
         if (!alive) return;
+
         setProduct(data);
+
+        // auto select first variant
+        const first = data?.variants?.[0];
+        setSelectedVariantId(first?._id || "");
         setQty(1);
       } catch (e) {
         if (!alive) return;
@@ -34,15 +45,27 @@ export default function ProductDetails() {
       }
     })();
 
-    return () => {
-      alive = false;
-    };
+    return () => (alive = false);
   }, [id]);
 
+  const variants = product?.variants || [];
+
+  const selectedVariant = useMemo(() => {
+    if (!variants.length) return null;
+    return (
+      variants.find((v) => v?._id === selectedVariantId) || variants[0] || null
+    );
+  }, [variants, selectedVariantId]);
+
+  const price = selectedVariant?.price ?? getMinPrice(variants);
+  const stock = selectedVariant?.stock ?? 0;
+
   const img = product?.image || "/images/fallback/default.jpg";
-  const price = product?.price ?? 0;
-  const stock = product?.stock ?? 0;
-  const canAdd = stock > 0 && qty >= 1 && qty <= stock;
+
+  const canAdd = !!selectedVariant && stock > 0 && qty >= 1 && qty <= stock;
+
+  const onMinus = () => setQty((q) => Math.max(1, q - 1));
+  const onPlus = () => setQty((q) => Math.min(stock || 99, q + 1));
 
   return (
     <div className="min-h-screen text-amber-50/90">
@@ -51,14 +74,14 @@ export default function ProductDetails() {
       <main className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex items-center gap-3 text-sm text-amber-50/60">
           <Link
-            to="/"
+            to="/products"
             className="inline-flex items-center gap-2 hover:text-amber-200 transition"
           >
             <ChevronLeft size={16} />
-            Back to Home
+            Back to Products
           </Link>
           <span className="opacity-40">/</span>
-          <span className="text-amber-100/70">Product</span>
+          <span className="text-amber-100/70">Details</span>
         </div>
 
         {loading ? (
@@ -102,9 +125,12 @@ export default function ProductDetails() {
                 {product.description || "No description yet."}
               </p>
 
+              {/* PRICE + STOCK */}
               <div className="mt-6 flex items-end justify-between gap-4">
                 <div>
-                  <div className="text-sm text-amber-50/60">Price</div>
+                  <div className="text-sm text-amber-50/60">
+                    Price {selectedVariant ? `(${selectedVariant.size})` : ""}
+                  </div>
                   <div className="text-2xl font-semibold text-amber-300">
                     ৳ {Number(price).toLocaleString()}
                   </div>
@@ -117,8 +143,46 @@ export default function ProductDetails() {
                       stock > 0 ? "text-emerald-300" : "text-red-300"
                     }`}
                   >
-                    {stock > 0 ? `${stock} available` : "Out of stock"}
+                    {selectedVariant
+                      ? stock > 0
+                        ? `${stock} available`
+                        : "Out of stock"
+                      : "Select size"}
                   </div>
+                </div>
+              </div>
+
+              {/* VARIANT SELECTOR */}
+              <div className="mt-6">
+                <div className="text-sm text-amber-50/60 mb-2">Select size</div>
+
+                <div className="flex flex-wrap gap-2">
+                  {variants.map((v) => {
+                    const active = v._id === selectedVariantId;
+                    const disabled = (v?.stock ?? 0) <= 0;
+
+                    return (
+                      <button
+                        key={v._id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVariantId(v._id);
+                          setQty(1);
+                        }}
+                        disabled={disabled}
+                        className={[
+                          "px-4 py-2 rounded-2xl text-sm font-semibold transition ring-1",
+                          active
+                            ? "bg-amber-300 text-black ring-amber-300"
+                            : "bg-black/30 text-amber-50/80 ring-amber-300/12 hover:ring-amber-300/35 hover:bg-white/5",
+                          disabled ? "opacity-40 cursor-not-allowed" : "",
+                        ].join(" ")}
+                        title={disabled ? "Out of stock" : ""}
+                      >
+                        {v.size}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -129,18 +193,22 @@ export default function ProductDetails() {
                 <div className="inline-flex items-center rounded-2xl bg-black/30 ring-1 ring-amber-300/12 overflow-hidden">
                   <button
                     className="px-4 py-2 text-amber-200 hover:bg-white/5 transition disabled:opacity-40"
-                    onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    onClick={onMinus}
                     disabled={qty <= 1}
+                    type="button"
                   >
                     -
                   </button>
+
                   <div className="px-5 py-2 text-amber-50/85 min-w-[56px] text-center">
                     {qty}
                   </div>
+
                   <button
                     className="px-4 py-2 text-amber-200 hover:bg-white/5 transition disabled:opacity-40"
-                    onClick={() => setQty((q) => Math.min(stock || 99, q + 1))}
-                    disabled={stock > 0 ? qty >= stock : true}
+                    onClick={onPlus}
+                    disabled={!selectedVariant || stock <= 0 || qty >= stock}
+                    type="button"
                   >
                     +
                   </button>
@@ -152,13 +220,20 @@ export default function ProductDetails() {
                 <button
                   disabled={!canAdd}
                   className="inline-flex justify-center items-center gap-2 px-5 py-3 rounded-2xl bg-amber-300 text-black font-semibold hover:bg-amber-200 transition disabled:opacity-40 disabled:hover:bg-amber-300"
+                  type="button"
+                  onClick={() => {
+
+                    alert(
+                      `Added: ${product.name} (${selectedVariant?.size}) x${qty}`
+                    );
+                  }}
                 >
                   <ShoppingCart size={18} />
                   Add to Cart
                 </button>
 
                 <Link
-                  to="/"
+                  to="/products"
                   className="inline-flex justify-center items-center px-5 py-3 rounded-2xl bg-white/5 ring-1 ring-amber-300/12 text-amber-50/80 hover:ring-amber-300/30 transition"
                 >
                   Continue Shopping
@@ -166,7 +241,7 @@ export default function ProductDetails() {
               </div>
 
               <div className="mt-6 text-xs text-amber-50/45">
-                {/* Next step: Cart state + localStorage add করবো। */}
+              {/*  */}
               </div>
             </div>
           </div>

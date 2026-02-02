@@ -1,14 +1,28 @@
 import { ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 
+function getMinVariantPrice(variants = []) {
+  const prices = variants
+    .map((v) => Number(v?.price || 0))
+    .filter((n) => Number.isFinite(n) && n > 0);
+
+  return prices.length ? Math.min(...prices) : 0;
+}
+
 export default function ProductCard({ product }) {
   const title = product?.name || "Attar Name";
   const category = product?.category || "Category";
-  const price = product?.price ?? 0;
 
-  const img =
-    product?.image || product?.imageUrl || "/images/fallback/default.jpg";
+  const variants = Array.isArray(product?.variants) ? product.variants : [];
+  const minPriceFromVariants = getMinVariantPrice(variants);
 
+  // fallback support (old data)
+  const fallbackPrice = Number(product?.price ?? 0);
+  const displayPrice = minPriceFromVariants || fallbackPrice;
+
+  const showFrom = variants.length > 0 && minPriceFromVariants > 0;
+
+  const img = product?.image || product?.imageUrl || "/images/fallback/default.jpg";
   const id = product?._id || product?.id;
 
   return (
@@ -23,9 +37,17 @@ export default function ProductCard({ product }) {
             className="h-full w-full object-cover group-hover:scale-[1.05] transition duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10" />
+
           <div className="absolute top-3 left-3 text-xs px-3 py-1.5 rounded-full bg-black/40 backdrop-blur ring-1 ring-amber-300/15 text-amber-50/85">
             {category}
           </div>
+
+          {/* small badge for variants count */}
+          {variants.length > 0 ? (
+            <div className="absolute top-3 right-3 text-xs px-3 py-1.5 rounded-full bg-black/40 backdrop-blur ring-1 ring-amber-300/15 text-amber-50/80">
+              {variants.length} sizes
+            </div>
+          ) : null}
         </div>
 
         <div className="p-5">
@@ -39,13 +61,20 @@ export default function ProductCard({ product }) {
         </div>
       </Link>
 
-      {/* bottom area stays clickable for Add button */}
+      {/* bottom area */}
       <div className="px-5 pb-5 flex items-center justify-between">
         <div className="text-amber-300 font-semibold">
-          ৳ {Number(price).toLocaleString()}
+          {showFrom ? "From " : ""}৳ {Number(displayPrice).toLocaleString()}
         </div>
 
-        <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 text-black font-semibold hover:bg-amber-200 transition">
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 text-black font-semibold hover:bg-amber-200 transition"
+          onClick={() => {
+            
+            alert("Open product details and select size to add to cart.");
+          }}
+        >
           <ShoppingCart size={16} />
           Add
         </button>

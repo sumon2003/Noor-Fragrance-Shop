@@ -1,28 +1,9 @@
 import { ShoppingCart } from "lucide-react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 export default function Navbar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // Home page section এ smooth scroll (About/Categories)
-  const goToSection = (id) => {
-    const isHome = location.pathname === "/";
-
-    if (isHome) {
-      const el = document.querySelector(id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-
-    // If not on home, first navigate to home then scroll
-    navigate(`/${id}`, { replace: false });
-    // small delay to allow home render
-    setTimeout(() => {
-      const el = document.querySelector(id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 250);
-  };
+  const { count } = useCart();
 
   const navClass = ({ isActive }) =>
     `hover:text-amber-200 transition ${
@@ -35,12 +16,8 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-2xl overflow-hidden bg-white/5 ring-1 ring-amber-300/20 shadow-[0_10px_30px_rgba(212,175,55,0.10)]">
-            
-            <img
-              src="/logo.jpg"
-              alt="Noor Attar"
-              className="h-full w-full object-cover"
-            />
+            {/* logo path must be from public: /logo.jpg */}
+            <img src="/logo.jpg" alt="Noor Attar" className="h-full w-full object-cover" />
           </div>
 
           <div className="leading-tight">
@@ -48,67 +25,53 @@ export default function Navbar() {
               NOOR <span className="text-amber-300">ATTAR</span>
             </div>
             <div className="text-[11px] text-amber-200/60 tracking-[0.25em] uppercase">
-              Premium Fragrance
+              Dark Premium
             </div>
           </div>
         </Link>
 
-        {/* Desktop nav */}
+        {/* Menu */}
         <nav className="hidden md:flex items-center gap-6 text-sm">
-          <NavLink to="/" className={navClass}>
+          <NavLink className={navClass} to="/">
             Home
           </NavLink>
 
-          <button
-            type="button"
-            onClick={() => goToSection("#about")}
-            className="cursor-pointer text-amber-50/70 hover:text-amber-200 transition"
-          >
-            About
-          </button>
-
-          <button
-            type="button"
-            onClick={() => goToSection("#categories")}
-            className="cursor-pointer text-amber-50/70 hover:text-amber-200 transition"
-          >
-            Categories
-          </button>
-
-          <NavLink to="/products" className={navClass}>
+          <NavLink className={navClass} to="/products">
             Products
           </NavLink>
+
+          <a className="text-amber-50/70 hover:text-amber-200 transition" href="#about">
+            About
+          </a>
         </nav>
 
-        {/* Right actions */}
+        {/* Right */}
         <div className="flex items-center gap-2">
-          {/* later: to="/login" */}
-          <Link
-            to="/"
+          <NavLink
+            to="/login"
             className="px-4 py-2 rounded-full bg-white/5 ring-1 ring-amber-300/20 hover:ring-amber-300/35 hover:bg-white/10 transition text-amber-50/80 text-sm"
-            onClick={(e) => {
-              // placeholder: home page login section future
-              // If you later add /login, remove this handler.
-              e.preventDefault();
-              alert("Login page coming soon!");
-            }}
           >
             Login
-          </Link>
+          </NavLink>
 
-          {/* later: to="/cart" */}
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-b from-amber-300/25 to-amber-300/10 ring-1 ring-amber-300/30 hover:ring-amber-300/45 transition text-amber-50/90 text-sm"
-            onClick={() => alert("Cart feature coming soon!")}
+          {/* Cart button goes to /cart */}
+          <Link
+            to="/cart"
+            className="relative inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-b from-amber-300/25 to-amber-300/10 ring-1 ring-amber-300/30 hover:ring-amber-300/45 transition text-amber-50/90 text-sm"
           >
             <ShoppingCart size={16} />
             Cart
-          </button>
+
+            {/* badge */}
+            {count > 0 && (
+              <span className="absolute -top-2 -right-2 h-6 min-w-[24px] px-2 rounded-full bg-amber-300 text-black text-xs font-bold grid place-items-center shadow">
+                {count}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 
-      {/* subtle divider glow */}
       <div className="h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
     </header>
   );

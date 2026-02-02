@@ -22,10 +22,10 @@ export default function Navbar() {
 
           <div className="leading-tight">
             <div className="font-semibold tracking-widest text-amber-50">
-              NOOR <span className="text-amber-300">ATTAR</span>
+              NOOR <span className="text-amber-300"><Fragrance></Fragrance></span>
             </div>
             <div className="text-[11px] text-amber-200/60 tracking-[0.25em] uppercase">
-              Dark Premium
+              Premium Attar
             </div>
           </div>
         </Link>

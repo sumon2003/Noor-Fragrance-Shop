@@ -56,7 +56,6 @@ export default function Categories({ selectedCategory, onSelectCategory }) {
         </div>
 
         <div className="mt-4 text-xs text-amber-50/50">
-          Next: later backend filter + search add করবো।
         </div>
       </div>
     </section>

@@ -2,17 +2,10 @@ import mongoose from "mongoose";
 
 export async function connectDB() {
   const uri = process.env.MONGO_URI;
+  if (!uri) throw new Error("MONGO_URI missing in .env");
 
-  if (!uri) {
-    throw new Error("MONGO_URI missing in .env");
-  }
+  mongoose.set("strictQuery", true);
 
-  try {
-    await mongoose.connect(uri);
-    console.log("MongoDB connected");
-    console.log("Connected DB:", mongoose.connection.name);
-  } catch (err) {
-    console.error("MongoDB connection failed:", err.message);
-    process.exit(1);
-  }
+  await mongoose.connect(uri);
+  console.log("MongoDB connected");
 }

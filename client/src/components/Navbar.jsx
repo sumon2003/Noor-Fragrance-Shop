@@ -22,7 +22,7 @@ export default function Navbar() {
 
           <div className="leading-tight">
             <div className="font-semibold tracking-widest text-amber-50">
-              NOOR <span className="text-amber-300"><Fragrance></Fragrance></span>
+              NOOR <span className="text-amber-300">Fragrance</span>
             </div>
             <div className="text-[11px] text-amber-200/60 tracking-[0.25em] uppercase">
               Premium Attar
@@ -36,13 +36,13 @@ export default function Navbar() {
             Home
           </NavLink>
 
-          <NavLink className={navClass} to="/products">
-            Products
-          </NavLink>
-
           <a className="text-amber-50/70 hover:text-amber-200 transition" href="#about">
             About
           </a>
+          
+          <NavLink className={navClass} to="/products">
+            Products
+          </NavLink>
         </nav>
 
         {/* Right */}

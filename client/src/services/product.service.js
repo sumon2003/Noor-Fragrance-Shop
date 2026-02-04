@@ -1,40 +1,42 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+// client/src/services/product.service.js
 
-// Frontend base (vite) - so local public images will work
-const FRONT_BASE = typeof window !== "undefined" ? window.location.origin : "";
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:5000";
 
-function normalizeImagePath(path) {
-  if (!path) return "";
+const PRODUCTS_BASE = `${API_BASE}/api/products`;
 
-  // If already absolute URL, keep it
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-
-  // If it's relative without slash, turn into "/..."
-  if (!path.startsWith("/")) path = `/${path}`;
-
-  // Now make it absolute to frontend origin
-  return `${FRONT_BASE}${path}`;
+async function handle(res) {
+  if (!res.ok) {
+    let msg = "Request failed";
+    try {
+      const data = await res.json();
+      msg = data?.message || msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  return res.json();
 }
 
-export async function fetchProducts() {
-  const res = await fetch(`${API_BASE}/api/products`);
-  if (!res.ok) throw new Error("Failed to fetch products");
-  const data = await res.json();
+export async function fetchProducts({ category, q, sort } = {}) {
+  const params = new URLSearchParams();
+  if (category && category !== "All") params.set("category", category);
+  if (q) params.set("q", q);
+  if (sort) params.set("sort", sort);
 
-  return data.map((p) => ({
-    ...p,
-    // unify image field for UI
-    image: normalizeImagePath(p.image || p.imageUrl || ""),
-  }));
+  const url = params.toString()
+    ? `${PRODUCTS_BASE}?${params.toString()}`
+    : `${PRODUCTS_BASE}`;
+
+  const res = await fetch(url);
+  return handle(res);
 }
 
 export async function fetchProductById(id) {
-  const res = await fetch(`${API_BASE}/api/products/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch product");
-  const p = await res.json();
+  const res = await fetch(`${PRODUCTS_BASE}/${id}`);
+  return handle(res);
+}
 
-  return {
-    ...p,
-    image: normalizeImagePath(p.image || p.imageUrl || ""),
-  };
+export async function fetchProductBySlug(slug) {
+  const res = await fetch(`${PRODUCTS_BASE}/slug/${slug}`);
+  return handle(res);
 }

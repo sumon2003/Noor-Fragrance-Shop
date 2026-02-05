@@ -1,21 +1,26 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, trim: true, required: true, minlength: 2, maxlength: 80 },
-    email: { type: String, trim: true, lowercase: true, required: true, unique: true, index: true },
-    passwordHash: { type: String, required: true },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
-    isActive: { type: Boolean, default: true },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    verificationToken: String,
+    verificationTokenExpire: Date,
   },
   { timestamps: true }
 );
 
-// helpers
-userSchema.methods.comparePassword = async function (plain) {
-  return bcrypt.compare(plain, this.passwordHash);
-};
-
-const User = mongoose.model("User", userSchema);
-export default User;
+export default mongoose.model("User", userSchema);

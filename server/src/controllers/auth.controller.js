@@ -1,108 +1,139 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
-
 import User from "../models/User.js";
-import sendEmail from "../utils/sendEmail.js";
+import { signToken } from "../utils/jwt.js";
+import { createEmailVerifyToken } from "../utils/tokens.js";
+import { sendVerificationEmail } from "../utils/mailer.js";
 
-/* ================= REGISTER ================= */
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
     const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: "Email already registered" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const verificationToken = crypto.randomBytes(32).toString("hex");
+    if (exists) return res.status(400).json({ message: "Email already in use" });
 
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
-      verificationToken,
-      verificationTokenExpire: Date.now() + 10 * 60 * 1000, // 10 min
+      password,
+      isEmailVerified: false,
     });
 
-    const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+    // create verify token + store hash
+    const { token, tokenHash, expiresAt } = createEmailVerifyToken();
+    user.emailVerifyTokenHash = tokenHash;
+    user.emailVerifyTokenExpires = expiresAt;
+    await user.save();
 
-    await sendEmail({
-      to: user.email,
-      subject: "Verify your email - Noor Fragrance",
-      html: `
-        <h2>Verify your email</h2>
-        <p>Click the link below:</p>
-        <a href="${verifyUrl}">${verifyUrl}</a>
-        <p>This link expires in 10 minutes.</p>
-      `,
-    });
+    // send mail (fail হলেও register হবে)
+    try {
+      await sendVerificationEmail({ to: user.email, name: user.name, token });
+    } catch (e) {
+      console.error("MAIL ERROR:", e?.message || e);
+    }
 
-    res.status(201).json({
-      message: "Verification email sent. Please check your inbox.",
+    const jwt = signToken({ id: user._id, role: user.role });
+
+    return res.status(201).json({
+      message: "Registered. Please check your email to verify.",
+      token: jwt,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        createdAt: user.createdAt,
+      },
     });
   } catch (err) {
-    res.status(500).json({ message: "Registration failed" });
+    next(err);
   }
 };
 
-/* ================= VERIFY EMAIL ================= */
-export const verifyEmail = async (req, res) => {
-  const { token } = req.params;
+export const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({
-    verificationToken: token,
-    verificationTokenExpire: { $gt: Date.now() },
-  });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
-  if (!user) {
-    return res.status(400).json({ message: "Invalid or expired token" });
+    const ok = await user.comparePassword(password);
+    if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+
+    const jwt = signToken({ id: user._id, role: user.role });
+
+    return res.json({
+      token: jwt,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (err) {
+    next(err);
   }
-
-  user.isVerified = true;
-  user.verificationToken = undefined;
-  user.verificationTokenExpire = undefined;
-
-  await user.save();
-
-  res.json({ message: "Email verified successfully. You can login now." });
 };
 
-/* ================= LOGIN ================= */
-export const login = async (req, res) => {
-  const { email, password } = req.body;
+export const me = async (req, res) => {
+  // protect middleware already adds req.user
+  res.json({ user: req.user });
+};
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(400).json({ message: "Invalid credentials" });
+// verify endpoint
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) return res.status(400).json({ message: "Token missing" });
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      emailVerifyTokenHash: tokenHash,
+      emailVerifyTokenExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerifyTokenHash = null;
+    user.emailVerifyTokenExpires = null;
+    await user.save();
+
+    return res.json({ message: "Email verified successfully" });
+  } catch (err) {
+    next(err);
   }
+};
 
-  if (!user.isVerified) {
-    return res
-      .status(401)
-      .json({ message: "Please verify your email first" });
+// resend verification (optional but pro)
+export const resendVerification = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email required" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
+
+    const { token, tokenHash, expiresAt } = createEmailVerifyToken();
+    user.emailVerifyTokenHash = tokenHash;
+    user.emailVerifyTokenExpires = expiresAt;
+    await user.save();
+
+    await sendVerificationEmail({ to: user.email, name: user.name, token });
+
+    return res.json({ message: "Verification email resent" });
+  } catch (err) {
+    next(err);
   }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(400).json({ message: "Invalid credentials" });
-  }
-
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-
-  res.json({
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    },
-  });
 };

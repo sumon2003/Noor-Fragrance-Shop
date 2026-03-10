@@ -3,6 +3,7 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js"; 
+import orderRoutes from "./routes/order.routes.js";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes); 
+app.use("/api/orders", orderRoutes);
 
 app.get("/", (req, res) => {
   res.send("Noor Fragrance API is running...");

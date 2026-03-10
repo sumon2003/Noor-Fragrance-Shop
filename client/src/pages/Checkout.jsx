@@ -2,21 +2,42 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext'; 
 
 const Checkout = () => {
-  const { cart, totalPrice } = useCart();
-  const [shippingInfo, setShippingInfo] = useState({
-    phone: '',
-    address: '',
-    city: ''
-  });
+  const { cart, totalPrice, clearCart } = useCart();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [shippingInfo, setShippingInfo] = useState({ phone: '', address: '', city: '' });
 
   const handleInputChange = (e) => {
     setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    console.log("Order Placing with:", { cart, shippingInfo, totalPrice });
-    alert("Order Received! (Backend Integration Pending)");
+    setLoading(true);
+
+    try {
+      const orderData = {
+        orderItems: cart.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          image: item.image,
+          price: item.price,
+          product: item._id
+        })),
+        shippingAddress: shippingInfo,
+        paymentMethod: "Cash on Delivery",
+        totalPrice: totalPrice,
+      };
+
+      const result = await orderService.createOrder(orderData);
+      console.log("Order Success:", result);
+      
+      alert("Order Placed Successfully!");
+    } catch (error) {
+      alert(error.response?.data?.message || "Order failed to place");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,8 +66,12 @@ const Checkout = () => {
                 placeholder="House no, Road no, Area..."
               />
             </div>
-            <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 rounded-xl transition shadow-[0_0_20px_rgba(234,179,8,0.3)]">
-              CONFIRM ORDER
+            <button 
+                type="submit" 
+                disabled={loading || cart.length === 0}
+                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 rounded-xl transition"
+            >
+                {loading ? "PROCESSING..." : "CONFIRM ORDER"}
             </button>
           </form>
         </div>

@@ -6,6 +6,7 @@ import Cart from "./pages/CartPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
+import Checkout from "./pages/Checkout";
 
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-email/:token" element={<VerifyEmail />} />
+      <Route path="/checkout" element={<Checkout />} />
     </Routes>
   );
 }

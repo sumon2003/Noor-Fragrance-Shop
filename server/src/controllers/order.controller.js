@@ -1,5 +1,5 @@
 import Order from "../models/Order.js";
-import asyncHandler from "../utils/asyncHandler.js"; 
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 // @desc    Create new order
 // @route   POST /api/orders

@@ -120,12 +120,12 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <button
-                className="mt-6 w-full px-5 py-3 rounded-2xl bg-amber-300 text-black font-semibold hover:bg-amber-200 transition"
-                onClick={() => alert("Checkout later")}
+              <Link
+                to="/checkout"
+                className="mt-6 w-full inline-flex justify-center items-center px-5 py-3 rounded-2xl bg-amber-300 text-black font-bold hover:bg-amber-200 transition shadow-[0_0_20px_rgba(251,191,36,0.2)]"
               >
-                Checkout
-              </button>
+                Checkout Now
+              </Link>
 
               <Link
                 to="/products"

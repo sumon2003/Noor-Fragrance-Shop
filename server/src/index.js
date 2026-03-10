@@ -16,13 +16,6 @@ mongoose
   .then(async () => { 
     console.log("✅ MongoDB connected");
 
-    try {
-      await mongoose.connection.collection('users').deleteMany({});
-      console.log("🔥 All users deleted successfully from Atlas!");
-    } catch (err) {
-      console.error("❌ Error deleting users:", err.message);
-    }
-
     app.listen(process.env.PORT, () =>
       console.log(`🚀 Server running on port ${process.env.PORT}`)
     );

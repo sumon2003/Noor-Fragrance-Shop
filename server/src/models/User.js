@@ -6,6 +6,11 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }, 
   role: { type: String, default: "user" },
+  isAdmin: { 
+    type: Boolean, 
+    default: false, 
+    required: true 
+  },
   isEmailVerified: { type: Boolean, default: false },
   emailVerifyTokenHash: String,
   emailVerifyTokenExpires: Date,

@@ -1,11 +1,11 @@
-import { Router } from "express";
-import { requireAuth } from "../middlewares/auth.middleware.js";
-import { requireAdmin } from "../middlewares/admin.middleware.js";
+import express from "express";
+const router = express.Router();
+import { getDashboardStats } from "../controllers/admin.controller.js";
+import { protect, admin } from "../middlewares/auth.middleware.js";
 
-const router = Router();
-
-router.get("/health", requireAuth, requireAdmin, (req, res) => {
-  res.json({ ok: true, message: "Admin route working", admin: req.user.email });
-});
+// @desc    Get dashboard stats
+// @route   GET /api/admin/stats
+// @access  Private/Admin
+router.route("/stats").get(protect, admin, getDashboardStats);
 
 export default router;

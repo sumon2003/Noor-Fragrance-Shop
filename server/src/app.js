@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-
 import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js"; 
 import orderRoutes from "./routes/order.routes.js";
@@ -8,15 +7,14 @@ import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
-
 app.use(cors({
   origin: "http://localhost:5173",
   credentials: true
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // এটি অত্যন্ত জরুরি
 
-// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes); 
 app.use("/api/orders", orderRoutes);

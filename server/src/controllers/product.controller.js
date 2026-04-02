@@ -46,20 +46,30 @@ export const createProduct = async (req, res) => {
       ingredients, variants 
     } = req.body;
 
-    // variants এবং ingredients স্ট্রিং হিসেবে আসলে সেগুলোকে JSON হিসেবে পার্স করা
-    const parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
-    const parsedIngredients = typeof ingredients === 'string' ? ingredients.split(',').map(i => i.trim()) : ingredients;
+    // ১. Variants safe parsing
+    let parsedVariants = [];
+    if (variants) {
+      parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+    }
+
+    // ২. Ingredients safe parsing
+    let parsedIngredients = [];
+    if (ingredients) {
+      parsedIngredients = typeof ingredients === 'string' 
+        ? ingredients.split(',').map(i => i.trim()).filter(i => i !== "") 
+        : (Array.isArray(ingredients) ? ingredients : []);
+    }
 
     const newProduct = new Product({
       name,
       slug,
       category,
-      description,
-      image: req.file ? req.file.path : "", // Cloudinary URL এখান থেকে আসবে
+      description: description || "",
+      image: req.file ? req.file.path : "", 
       notes: {
-        top: topNotes,
-        heart: heartNotes,
-        base: baseNotes
+        top: topNotes || "",
+        heart: heartNotes || "",
+        base: baseNotes || ""
       },
       ingredients: parsedIngredients,
       variants: parsedVariants

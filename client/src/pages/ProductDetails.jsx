@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ShoppingCart, Wind, Heart, Anchor, List } from "lucide-react"; // নতুন আইকন
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { fetchProductById } from "../services/product.service";
@@ -11,17 +11,10 @@ function getMinPrice(variants = []) {
   return prices.length ? Math.min(...prices) : 0;
 }
 
-// Image URL normalize helper
 function resolveImageUrl(image) {
   if (!image) return "/images/fallback/default.jpg";
-
-  // already absolute (http/https)
   if (/^https?:\/\//i.test(image)) return image;
-
-  // if starts with "/" => served from Vite public (client/public)
   if (image.startsWith("/")) return image;
-
-  // otherwise make it absolute from public
   return `/${image}`;
 }
 
@@ -32,7 +25,6 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [qty, setQty] = useState(1);
-
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -40,18 +32,13 @@ export default function ProductDetails() {
 
   useEffect(() => {
     let alive = true;
-
     (async () => {
       try {
         setLoading(true);
         setErr("");
-
         const data = await fetchProductById(id);
         if (!alive) return;
-
         setProduct(data);
-
-        // auto select first variant
         const first = data?.variants?.[0];
         setSelectedVariantId(first?._id || "");
         setQty(1);
@@ -63,234 +50,188 @@ export default function ProductDetails() {
         setLoading(false);
       }
     })();
-
     return () => (alive = false);
   }, [id]);
 
   const variants = product?.variants || [];
-
   const selectedVariant = useMemo(() => {
     if (!variants.length) return null;
-    return (
-      variants.find((v) => v?._id === selectedVariantId) || variants[0] || null
-    );
+    return variants.find((v) => v?._id === selectedVariantId) || variants[0] || null;
   }, [variants, selectedVariantId]);
 
   const price = selectedVariant?.price ?? getMinPrice(variants);
   const stock = selectedVariant?.stock ?? 0;
-
-  // correct image (works for /images/... or full URL)
   const img = resolveImageUrl(product?.image || product?.imageUrl);
-
   const canAdd = !!selectedVariant && stock > 0 && qty >= 1 && qty <= stock;
 
   const onMinus = () => setQty((q) => Math.max(1, q - 1));
   const onPlus = () => setQty((q) => Math.min(stock || 99, q + 1));
 
-  // add to cart
   const handleAddToCart = () => {
     if (!product || !selectedVariant) return;
-
-    // Validate qty vs stock
     const safeQty = Math.max(1, Math.min(qty, stock || 1));
-
     addToCart({
       productId: product._id,
-      // unique key for variant
       variantId: `${product._id}_${selectedVariant.size}`,
       qty: safeQty,
       snapshot: {
         _id: product._id,
         name: product.name,
         category: product.category,
-        description: product.description,
         image: img,
         size: selectedVariant.size,
         price: Number(selectedVariant.price || 0),
         stock: Number(selectedVariant.stock || 0),
       },
     });
-
   };
 
   return (
-    <div className="min-h-screen text-amber-50/90">
+    <div className="min-h-screen bg-[#0a0a0a] text-amber-50/90">
       <Navbar />
-
       <main className="max-w-6xl mx-auto px-4 py-10">
-        <div className="flex items-center gap-3 text-sm text-amber-50/60">
-          <Link
-            to="/products"
-            className="inline-flex items-center gap-2 hover:text-amber-200 transition"
-          >
-            <ChevronLeft size={16} />
-            Back to Products
+        <div className="flex items-center gap-3 text-sm text-amber-50/60 mb-8">
+          <Link to="/products" className="inline-flex items-center gap-2 hover:text-amber-200 transition">
+            <ChevronLeft size={16} /> Back to Products
           </Link>
           <span className="opacity-40">/</span>
-          <span className="text-amber-100/70">Details</span>
+          <span className="text-amber-100/70">{product?.name || 'Details'}</span>
         </div>
 
         {loading ? (
-          <div className="mt-8 rounded-3xl bg-white/5 ring-1 ring-amber-300/10 p-6">
-            Loading...
-          </div>
+          <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-t-2 border-amber-300 rounded-full" /></div>
         ) : err ? (
-          <div className="mt-8 rounded-3xl bg-white/5 ring-1 ring-red-400/30 p-6">
-            <div className="text-red-200 font-semibold">Error</div>
-            <div className="mt-1 text-amber-50/70">{err}</div>
-          </div>
-        ) : !product ? (
-          <div className="mt-8 rounded-3xl bg-white/5 ring-1 ring-amber-300/10 p-6">
-            Product not found
-          </div>
+          <div className="p-10 bg-red-500/10 rounded-3xl border border-red-500/20 text-center">{err}</div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* IMAGE */}
-            <div className="rounded-3xl overflow-hidden bg-white/5 ring-1 ring-amber-300/10">
-              <div className="relative aspect-[4/3]">
-                <img
-                  src={img}
-                  alt={product.name}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src = "/images/fallback/default.jpg";
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
-                <div className="absolute top-4 left-4 text-xs px-3 py-1.5 rounded-full bg-black/40 backdrop-blur ring-1 ring-amber-300/15">
-                  {product.category}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            
+            {/* --- LEFT: Image & Scent Profile --- */}
+            <div className="space-y-8">
+              <div className="rounded-[2.5rem] overflow-hidden bg-white/5 ring-1 ring-amber-300/10 shadow-2xl shadow-amber-900/10">
+                <img src={img} alt={product.name} className="w-full aspect-square object-cover" />
+              </div>
+
+              {/* Scent Profile Bars (স্যারের রিকোয়ারমেন্ট অনুযায়ী) */}
+              <div className="bg-white/5 border border-amber-300/10 rounded-3xl p-6 space-y-6">
+                <h3 className="text-xl font-bold text-amber-300 flex items-center gap-2">
+                  <Wind size={20} /> Scent Profile
+                </h3>
+                
+                <div className="space-y-4">
+                  {/* Top Notes Bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-amber-50/60 mb-1">
+                      <span>Top Notes (Opening)</span>
+                      <span className="text-amber-200">{product.notes?.top || 'Fresh'}</span>
+                    </div>
+                    <div className="h-3 bg-white/5 rounded-full overflow-hidden border border-amber-300/5">
+                      <div className="h-full bg-amber-400 w-[90%] rounded-full shadow-[0_0_10px_rgba(251,191,36,0.3)]" />
+                    </div>
+                  </div>
+
+                  {/* Heart Notes Bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-amber-50/60 mb-1">
+                      <span>Heart Notes (Evolution)</span>
+                      <span className="text-amber-200">{product.notes?.heart || 'Floral'}</span>
+                    </div>
+                    <div className="h-3 bg-white/5 rounded-full overflow-hidden border border-amber-300/5">
+                      <div className="h-full bg-amber-500 w-[70%] rounded-full" />
+                    </div>
+                  </div>
+
+                  {/* Base Notes Bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-amber-50/60 mb-1">
+                      <span>Base Notes (Long Lasting)</span>
+                      <span className="text-amber-200">{product.notes?.base || 'Woody'}</span>
+                    </div>
+                    <div className="h-3 bg-white/5 rounded-full overflow-hidden border border-amber-300/5">
+                      <div className="h-full bg-amber-700 w-[50%] rounded-full" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* DETAILS */}
-            <div className="rounded-3xl bg-white/5 ring-1 ring-amber-300/10 p-6">
-              <h1 className="text-2xl md:text-3xl font-semibold text-amber-50/90">
-                {product.name}
-              </h1>
-
-              <p className="mt-3 text-amber-50/65 leading-relaxed">
-                {product.description || "No description yet."}
-              </p>
-
-              {/* PRICE + STOCK */}
-              <div className="mt-6 flex items-end justify-between gap-4">
+            {/* --- RIGHT: Details & Selection --- */}
+            <div className="space-y-8">
+              <div className="bg-white/5 border border-amber-300/10 rounded-[2.5rem] p-8 space-y-6">
                 <div>
-                  <div className="text-sm text-amber-50/60">
-                    Price {selectedVariant ? `(${selectedVariant.size})` : ""}
+                  <span className="text-xs uppercase tracking-widest text-amber-300/60 font-bold">{product.category}</span>
+                  <h1 className="text-4xl font-bold mt-2 text-white">{product.name}</h1>
+                </div>
+
+                <p className="text-amber-50/60 leading-relaxed text-lg">{product.description}</p>
+
+                {/* Ingredients Chip List */}
+                {product.ingredients?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {product.ingredients.map((ing, i) => (
+                      <span key={i} className="text-[10px] px-3 py-1 bg-amber-300/5 border border-amber-300/10 rounded-full text-amber-200 uppercase tracking-tighter italic">
+                        • {ing.trim()}
+                      </span>
+                    ))}
                   </div>
-                  <div className="text-2xl font-semibold text-amber-300">
-                    ৳ {Number(price).toLocaleString()}
+                )}
+
+                <div className="h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
+
+                {/* Price & ML Selection */}
+                <div className="flex items-center justify-between">
+                  <div className="text-4xl font-bold text-amber-300">৳{Number(price).toLocaleString()}</div>
+                  <div className={`text-sm font-bold px-4 py-1 rounded-full ${stock > 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400'}`}>
+                    {stock > 0 ? `${stock} in stock` : 'Sold Out'}
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <div className="text-sm text-amber-50/60">Stock</div>
-                  <div
-                    className={`font-semibold ${
-                      stock > 0 ? "text-emerald-300" : "text-red-300"
-                    }`}
-                  >
-                    {selectedVariant
-                      ? stock > 0
-                        ? `${stock} available`
-                        : "Out of stock"
-                      : "Select size"}
-                  </div>
-                </div>
-              </div>
-
-              {/* VARIANT SELECTOR */}
-              <div className="mt-6">
-                <div className="text-sm text-amber-50/60 mb-2">Select size</div>
-
-                <div className="flex flex-wrap gap-2">
-                  {variants.map((v) => {
-                    const active = v._id === selectedVariantId;
-                    const disabled = (v?.stock ?? 0) <= 0;
-
-                    return (
+                <div className="space-y-3">
+                  <label className="text-sm font-bold text-amber-50/40 uppercase tracking-widest">Select Size</label>
+                  <div className="flex flex-wrap gap-3">
+                    {variants.map((v) => (
                       <button
                         key={v._id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedVariantId(v._id);
-                          setQty(1);
-                        }}
-                        disabled={disabled}
-                        className={[
-                          "px-4 py-2 rounded-2xl text-sm font-semibold transition ring-1",
-                          active
-                            ? "bg-amber-300 text-black ring-amber-300"
-                            : "bg-black/30 text-amber-50/80 ring-amber-300/12 hover:ring-amber-300/35 hover:bg-white/5",
-                          disabled ? "opacity-40 cursor-not-allowed" : "",
-                        ].join(" ")}
-                        title={disabled ? "Out of stock" : ""}
+                        onClick={() => { setSelectedVariantId(v._id); setQty(1); }}
+                        className={`px-6 py-3 rounded-2xl font-bold transition-all border ${v._id === selectedVariantId ? 'bg-amber-300 text-black border-amber-300' : 'bg-white/5 border-amber-300/10 hover:border-amber-300/40'}`}
                       >
                         {v.size}
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* QTY */}
-              <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="text-sm text-amber-50/60 w-20">Qty</div>
-
-                <div className="inline-flex items-center rounded-2xl bg-black/30 ring-1 ring-amber-300/12 overflow-hidden">
-                  <button
-                    className="px-4 py-2 text-amber-200 hover:bg-white/5 transition disabled:opacity-40"
-                    onClick={onMinus}
-                    disabled={qty <= 1}
-                    type="button"
-                  >
-                    -
-                  </button>
-
-                  <div className="px-5 py-2 text-amber-50/85 min-w-[56px] text-center">
-                    {qty}
+                    ))}
                   </div>
+                </div>
 
-                  <button
-                    className="px-4 py-2 text-amber-200 hover:bg-white/5 transition disabled:opacity-40"
-                    onClick={onPlus}
-                    disabled={!selectedVariant || stock <= 0 || qty >= stock}
-                    type="button"
+                {/* Qty & Add to Cart */}
+                <div className="flex gap-4 items-center pt-4">
+                  <div className="flex items-center bg-black/40 border border-amber-300/20 rounded-2xl overflow-hidden">
+                    <button onClick={onMinus} className="px-5 py-3 hover:bg-amber-300/10 transition">-</button>
+                    <span className="w-12 text-center font-bold">{qty}</span>
+                    <button onClick={onPlus} className="px-5 py-3 hover:bg-amber-300/10 transition">+</button>
+                  </div>
+                  <button 
+                    onClick={handleAddToCart}
+                    disabled={!canAdd}
+                    className="flex-1 bg-amber-300 text-black font-bold py-4 rounded-2xl hover:bg-amber-200 transition shadow-lg shadow-amber-300/10 flex items-center justify-center gap-2"
                   >
-                    +
+                    <ShoppingCart size={20} /> Add to Cart
                   </button>
                 </div>
               </div>
 
-              {/* ACTIONS */}
-              <div className="mt-7 flex flex-col sm:flex-row gap-3">
-                <button
-                  disabled={!canAdd}
-                  className="inline-flex justify-center items-center gap-2 px-5 py-3 rounded-2xl bg-amber-300 text-black font-semibold hover:bg-amber-200 transition disabled:opacity-40 disabled:hover:bg-amber-300"
-                  type="button"
-                  onClick={handleAddToCart}
-                >
-                  <ShoppingCart size={18} />
-                  Add to Cart
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigate("/products")}
-                  className="inline-flex justify-center items-center px-5 py-3 rounded-2xl bg-white/5 ring-1 ring-amber-300/12 text-amber-50/80 hover:ring-amber-300/30 transition"
-                >
-                  Continue Shopping
-                </button>
+              {/* Trust Badge / Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-white/5 rounded-3xl border border-amber-300/5 text-center space-y-1">
+                  <Anchor size={20} className="mx-auto text-amber-300/40" />
+                  <p className="text-[10px] text-amber-50/40 uppercase font-bold">100% Pure Concentrate</p>
+                </div>
+                <div className="p-4 bg-white/5 rounded-3xl border border-amber-300/5 text-center space-y-1">
+                  <List size={20} className="mx-auto text-amber-300/40" />
+                  <p className="text-[10px] text-amber-50/40 uppercase font-bold">Alcohol Free Fragrance</p>
+                </div>
               </div>
-
-              <div className="mt-6 text-xs text-amber-50/45">{/*  */}</div>
             </div>
           </div>
         )}
       </main>
-
       <Footer />
     </div>
   );

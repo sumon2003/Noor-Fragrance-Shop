@@ -21,7 +21,6 @@ const productSchema = new mongoose.Schema(
     description: String,
     image: { type: String, required: true },
 
-    // --- নতুন যোগ করা সেকশন: Notes & Ingredients ---
     notes: {
       top: { type: String, default: "" },    // Opening notes
       heart: { type: String, default: "" },  // Middle notes
@@ -30,8 +29,7 @@ const productSchema = new mongoose.Schema(
     ingredients: { 
       type: [String], 
       default: [] 
-    }, // উপাদানের তালিকা (Array of strings)
-    // ----------------------------------------------
+    }, 
 
     variants: {
       type: [variantSchema],

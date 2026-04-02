@@ -106,12 +106,12 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // ইমেইল ভেরিফাইড না হলে লগইন করতে দেওয়া হবে না
+    // email verification check
     if (!user.isEmailVerified) {
       return res.status(403).json({ message: "Please verify your email first." });
     }
 
-    // পাসওয়ার্ড চেক
+    // password check
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
@@ -128,7 +128,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isAdmin: user.isAdmin, // <--- added to fix frontend redirect
+        isAdmin: user.isAdmin, 
       },
     });
   } catch (error) {
@@ -148,7 +148,7 @@ export const me = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isAdmin: user.isAdmin // <--- added for session persistence
+        isAdmin: user.isAdmin 
       }
     });
   } catch (error) {

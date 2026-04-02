@@ -8,19 +8,19 @@ export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: "Email already in use" });
 
     // Email verification token
     const { token, tokenHash, expires } = createEmailVerifyToken();
 
-    // DB user 
+    // DB user creation (isAdmin field remains false by default)
     const user = await User.create({
       name,
       email,
       password, 
       role: "user",
+      isAdmin: false, // Default false for security
       isEmailVerified: false,
       emailVerifyTokenHash: tokenHash,
       emailVerifyTokenExpires: expires,
@@ -55,11 +55,9 @@ export const verifyEmail = async (req, res) => {
 
     if (!token) return res.status(400).json({ message: "Token is required" });
 
-   
     const tokenHash = hashToken(token);
     console.log("🧪 Generated Hash:", tokenHash);
 
-    
     const user = await User.findOne({
       emailVerifyTokenHash: tokenHash,
       emailVerifyTokenExpires: { $gt: new Date() }, 
@@ -78,15 +76,18 @@ export const verifyEmail = async (req, res) => {
 
     console.log("✅ Email verified for:", user.email);
 
-    // JWT token 
-    const jwt = signToken({ id: user._id, role: user.role });
+    // JWT token (isAdmin added to payload for backend security)
+    const jwt = signToken({ id: user._id, role: user.role, isAdmin: user.isAdmin });
 
     return res.json({
       message: "Email verified successfully!",
       token: jwt,
       user: {
+        id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin, // <--- added to fix frontend redirect
       },
     });
   } catch (error) {
@@ -116,7 +117,8 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = signToken({ id: user._id, role: user.role });
+    // JWT token payload update
+    const token = signToken({ id: user._id, role: user.role, isAdmin: user.isAdmin });
 
     return res.json({
       message: "Login successful",
@@ -126,6 +128,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        isAdmin: user.isAdmin, // <--- added to fix frontend redirect
       },
     });
   } catch (error) {
@@ -133,11 +136,21 @@ export const login = async (req, res) => {
   }
 };
 
-// ME
+// 4. ME (GET PROFILE)
 export const me = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
-    res.json({ user });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin // <--- added for session persistence
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: "Me error", error: error.message });
   }

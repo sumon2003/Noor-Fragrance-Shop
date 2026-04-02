@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config(); 
 
-// সরাসরি env থেকে ডাটা নেওয়া
+// From .env file 
 const {
   EMAIL_USER,
   EMAIL_PASS,
@@ -10,9 +10,9 @@ const {
   CLIENT_URL,
 } = process.env;
 
-// Gmail এর জন্য সহজ ট্রান্সপোর্টার
+// Gmail SMTP 
 const transporter = nodemailer.createTransport({
-  service: "gmail", // হোস্ট এবং পোর্টের বদলে শুধু এটি দিন
+  service: "gmail", 
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS,
@@ -54,6 +54,6 @@ export const sendVerificationEmail = async (to, token) => {
     return info;
   } catch (error) {
     console.error("❌ Mailer Error:", error.message);
-    throw error; // এটি থ্রো করলে কন্ট্রোলার বুঝতে পারবে ইমেইল যায়নি
+    throw error; 
   }
 };

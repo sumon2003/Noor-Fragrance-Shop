@@ -111,8 +111,6 @@ export default function ProductDetails() {
       },
     });
 
-    // ✅ optionally go cart
-    // navigate("/cart");
   };
 
   return (

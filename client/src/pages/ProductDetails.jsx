@@ -111,7 +111,7 @@ export default function ProductDetails() {
                 <img src={img} alt={product.name} className="w-full aspect-square object-cover" />
               </div>
 
-              {/* Scent Profile Bars (স্যারের রিকোয়ারমেন্ট অনুযায়ী) */}
+              {/* Scent Profile Bars  */}
               <div className="bg-white/5 border border-amber-300/10 rounded-3xl p-6 space-y-6">
                 <h3 className="text-xl font-bold text-amber-300 flex items-center gap-2">
                   <Wind size={20} /> Scent Profile

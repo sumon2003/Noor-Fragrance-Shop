@@ -38,24 +38,15 @@ export default function App() {
       <Route path="/checkout" element={<Checkout />} />
 
       {/* --- Admin Protected Routes --- */}
-      {/* এখানে নিশ্চিত করা হয়েছে যে ইউজার লগইন করা আছে এবং তার isAdmin প্রপার্টি true।
-          আপনার ডাটাবেসে Sumon ইউজারের isAdmin: true আছে, তাই এটি কাজ করবে।
-      */}
       <Route 
         path="/admin" 
         element={user && user.isAdmin ? <AdminLayout /> : <Navigate to="/login" replace />}
       >
         {/* /admin */}
         <Route index element={<AdminDashboard />} />
-        
-        {/* /admin/products - এখানে এখন আর Route Match এরর দিবে না */}
         <Route path="products" element={<AdminProducts />} /> 
-        
-        {/* /admin/products/add - নতুন স্মার্ট প্রোডাক্ট আপলোড ফর্ম */}
         <Route path="products/add" element={<AddProduct />} />
       </Route>
-
-      {/* 404 Handle - যদি ভুল কোনো রাউটে যায় তবে হোমে পাঠিয়ে দিবে */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -20,7 +20,6 @@ export default function Login() {
     try {
       const data = await login({ email, password });
       
-      // লগইন সফল হলে চেক করা হচ্ছে সে কি অ্যাডমিন কি না
       if (data?.user?.isAdmin) {
         nav("/admin", { replace: true });
       } else {

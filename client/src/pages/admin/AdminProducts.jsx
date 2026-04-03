@@ -5,7 +5,6 @@ import { Plus, Package, Edit2, Trash2, Loader2, ExternalLink } from 'lucide-reac
 
 const AdminProducts = () => {
   const nav = useNavigate();
-  // শুরুতে একটি খালি অ্যারে দিয়ে ইনিশিয়ালাইজ করা হয়েছে যাতে .length এরর না দেয়
   const [products, setProducts] = useState([]); 
   const [loading, setLoading] = useState(true);
 
@@ -13,11 +12,10 @@ const AdminProducts = () => {
     try {
       setLoading(true);
       const data = await adminService.getAllProductsAdmin();
-      // নিশ্চিত করা হচ্ছে যে ডাটাটি একটি অ্যারে, নাহলে খালি অ্যারে সেট হবে
       setProducts(Array.isArray(data) ? data : []); 
     } catch (err) {
       console.error("Failed to fetch products:", err);
-      setProducts([]); // এরর হলেও স্টেট খালি অ্যারে রাখা
+      setProducts([]); 
     } finally {
       setLoading(false);
     }
@@ -65,7 +63,7 @@ const AdminProducts = () => {
         </button>
       </div>
 
-      {/* products?.length ব্যবহার করা হয়েছে যা নিরাপদ */}
+      {/* products?.length */}
       {(!products || products.length === 0) ? (
         <div className="bg-white/5 border border-amber-300/10 rounded-[2.5rem] overflow-hidden backdrop-blur-md">
           <div className="p-24 text-center space-y-6">

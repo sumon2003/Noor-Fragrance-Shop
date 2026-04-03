@@ -1,6 +1,5 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
 
-// এই ফাংশনগুলো আপনার AuthContext এর জন্য জরুরি
 export function getToken() {
   return localStorage.getItem("token") || "";
 }
@@ -15,7 +14,7 @@ async function request(path, options = {}) {
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  // FormData চেক করা যাতে ইমেজ আপলোড ঠিক থাকে
+  // FormData check
   const isFormData = options.body instanceof FormData;
   if (!isFormData) {
     headers["Content-Type"] = "application/json";

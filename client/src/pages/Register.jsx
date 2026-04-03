@@ -14,16 +14,16 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false); // রেজিস্ট্রেশন সফল কি না তা ট্র্যাকিং করার জন্য
+  const [isSuccess, setIsSuccess] = useState(false); 
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr("");
     setLoading(true);
     try {
-      // রেজিস্ট্রেশন কল করা
+      // registration Call
       await register({ name, email, password });
-      // সফল হলে ডিরেক্ট হোম পেজে না পাঠিয়ে সাকসেস মেসেজ দেখানো
+      
       setIsSuccess(true);
     } catch (e2) {
       setErr(e2.message || "Register failed");
@@ -37,7 +37,7 @@ export default function Register() {
       <Navbar />
       <main className="max-w-lg mx-auto px-4 py-20 flex items-center justify-center min-h-[calc(100vh-200px)]">
         
-        {/* যদি রেজিস্ট্রেশন সফল হয় তবে এই ভিউটি দেখাবে */}
+        {/* Success Message */}
         {isSuccess ? (
           <div className="w-full rounded-[2.5rem] bg-white/5 border border-amber-300/10 p-10 text-center space-y-6 backdrop-blur-xl animate-in zoom-in duration-500">
             <div className="inline-flex p-5 rounded-full bg-amber-300/10 text-amber-300 mb-2">
@@ -58,7 +58,7 @@ export default function Register() {
             </div>
           </div>
         ) : (
-          /* রেজিস্ট্রেশন ফর্ম */
+          /* Registration Form */
           <div className="w-full rounded-[2.5rem] bg-white/5 border border-amber-300/10 p-8 md:p-10 backdrop-blur-md">
             <div className="space-y-2 mb-8 text-center">
               <h1 className="text-3xl font-bold text-white">Create Account</h1>

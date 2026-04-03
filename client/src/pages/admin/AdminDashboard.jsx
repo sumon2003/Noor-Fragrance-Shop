@@ -11,7 +11,6 @@ const AdminDashboard = () => {
     const fetchStats = async () => {
       try {
         const data = await adminService.getStats();
-        // Backend থেকে সরাসরি ডাটা অথবা data.data যেভাবে আসে সে অনুযায়ী সেট করুন
         setStats(data?.data || data); 
       } catch (err) {
         console.error("Failed to fetch stats", err);

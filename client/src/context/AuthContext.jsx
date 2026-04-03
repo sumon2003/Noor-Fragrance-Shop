@@ -19,7 +19,6 @@ export function AuthProvider({ children }) {
     (async () => {
       try {
         const data = await authService.me();
-        // Backend response user অবজেক্টের ভেতরে isAdmin আছে কি না নিশ্চিত করে সেট করা
         setUser(data?.user || data); 
       } catch (e) {
         setToken("");
@@ -32,7 +31,6 @@ export function AuthProvider({ children }) {
 
   const login = async ({ email, password }) => {
     const data = await authService.login({ email, password });
-    // ডাটাবেস থেকে আসা user অবজেক্ট (যাতে isAdmin আছে) সেট করা হচ্ছে
     setToken(data?.token);
     setUser(data?.user);
     return data;
@@ -40,8 +38,8 @@ export function AuthProvider({ children }) {
 
   const register = async ({ name, email, password }) => {
     const data = await authService.register({ name, email, password });
-    // setToken(data?.token); // এটি কমেন্ট করুন বা সরিয়ে দিন
-    // setUser(data?.user);   // এটিও সরিয়ে দিন
+    // setToken(data?.token); 
+    // setUser(data?.user);  
     return data;
   };
 
@@ -50,14 +48,13 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  // আপনার ডাটাবেসে 'isAdmin' ফিল্ডটি Boolean হিসেবে আছে, তাই সরাসরি সেটি চেক করা হচ্ছে
   const isAdmin = !!user?.isAdmin; 
 
   const value = useMemo(
     () => ({ 
       user, 
       booting, 
-      isAdmin, // এখন এটি true/false রিটার্ন করবে
+      isAdmin, 
       login, 
       register, 
       logout 

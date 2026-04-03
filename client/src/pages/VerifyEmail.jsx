@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom"; // useNavigate যোগ করা হয়েছে
+import { Link, useSearchParams, useNavigate } from "react-router-dom"; 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { CheckCircle2, XCircle, Loader2, PartyPopper } from "lucide-react";
@@ -10,7 +10,7 @@ const API_BASE =
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  const nav = useNavigate(); // এখানে nav ফাংশনটি ডিফাইন করা হলো
+  const nav = useNavigate(); 
 
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("Verifying your email...");
@@ -35,9 +35,9 @@ export default function VerifyEmail() {
           setStatus("success");
           setMessage("Congratulations! Your email is verified.");
           
-          // ৩ সেকেন্ড পর লগইন পেজে রিডাইরেক্ট
+          
           setTimeout(() => {
-            if (alive) nav("/login"); // এখন এটি কাজ করবে
+            if (alive) nav("/login"); 
           }, 3000);
         } else {
           throw new Error(data.message || "Verification failed");
@@ -51,13 +51,13 @@ export default function VerifyEmail() {
 
     doVerify();
     return () => { alive = false; };
-  }, [token, nav]); // dependency list এ nav যোগ করা হলো
+  }, [token, nav]); 
 
   return (
     <div className="min-h-screen text-amber-50/90 bg-black">
       <Navbar />
       <main className="max-w-xl mx-auto px-4 py-20 min-h-[70vh] flex items-center justify-center">
-        {/* বাকি ডিজাইন যা ছিল সব ঠিক আছে... */}
+        {/* Email Verification Content */}
         <div className="w-full rounded-[3rem] bg-white/5 border border-amber-300/10 p-10 backdrop-blur-xl text-center shadow-2xl relative overflow-hidden">
           
           {status === "loading" && (

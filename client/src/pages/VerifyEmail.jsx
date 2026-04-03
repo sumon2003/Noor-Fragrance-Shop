@@ -13,35 +13,40 @@ export default function VerifyEmail() {
   const [message, setMessage] = useState("Verifying your email...");
 
   useEffect(() => {
-    let alive = true;
+  let alive = true;
 
-    (async () => {
-      try {
-        setStatus("loading");
-        setMessage("Verifying your email...");
+  (async () => {
+    try {
+      setStatus("loading");
+      setMessage("Verifying your email...");
 
-        const res = await fetch(`${API_BASE}/api/auth/verify-email/${token}`);
-        const data = await res.json().catch(() => ({}));
+      // এখানে '/verify-email/' অংশটি নিশ্চিত করুন
+      const url = `${API_BASE}/api/auth/verify-email/${token}`;
+      console.log("🚀 Sending request to:", url); // কনসোলে ইউআরএল চেক করার জন্য
 
-        if (!res.ok) {
-          throw new Error(data?.message || "Verification failed");
-        }
+      const res = await fetch(url);
+      const data = await res.json().catch(() => ({}));
 
-        if (!alive) return;
-
-        setStatus("success");
-        setMessage(data?.message || "Email verified successfully!");
-      } catch (e) {
-        if (!alive) return;
-        setStatus("error");
-        setMessage(e?.message || "Invalid or expired verification link");
+      if (!res.ok) {
+        // যদি সার্ভার 400 দেয়, তবে এখানে ক্যাচ হবে
+        throw new Error(data?.message || "Verification failed");
       }
-    })();
 
-    return () => {
-      alive = false;
-    };
-  }, [token]);
+      if (!alive) return;
+
+      setStatus("success");
+      setMessage(data?.message || "Email verified successfully!");
+    } catch (e) {
+      if (!alive) return;
+      setStatus("error");
+      setMessage(e?.message || "Invalid or expired verification link");
+    }
+  })();
+
+  return () => {
+    alive = false;
+  };
+}, [token]);
 
   return (
     <div className="min-h-screen text-amber-50/90">

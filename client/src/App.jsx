@@ -13,6 +13,7 @@ import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from "./pages/admin/AdminProducts";
 import AddProduct from "./pages/admin/AddProduct";
+import EditProduct from "./pages/admin/EditProduct";
 import { useAuth } from './context/AuthContext';
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="products" element={<AdminProducts />} /> 
         <Route path="products/add" element={<AddProduct />} />
+        <Route path="products/edit/:id" element={<EditProduct />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

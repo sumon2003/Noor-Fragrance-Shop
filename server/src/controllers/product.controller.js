@@ -93,3 +93,54 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({ message: "Delete failed" });
   }
 };
+
+// ৫. প্রোডাক্ট আপডেট করা (Admin Side)
+export const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { 
+      name, slug, category, description, 
+      topNotes, heartNotes, baseNotes, 
+      ingredients, variants, isActive 
+    } = req.body;
+
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    // ১. Variants safe parsing
+    if (variants) {
+      product.variants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+    }
+
+    // ২. Ingredients safe parsing
+    if (ingredients) {
+      product.ingredients = typeof ingredients === 'string' 
+        ? ingredients.split(',').map(i => i.trim()).filter(i => i !== "") 
+        : (Array.isArray(ingredients) ? ingredients : product.ingredients);
+    }
+
+    // ৩. নতুন ইমেজ থাকলে আপডেট করা
+    if (req.file) {
+      product.image = req.file.path; 
+    }
+
+    // ৪. অন্যান্য ফিল্ড আপডেট
+    product.name = name || product.name;
+    product.slug = slug || product.slug;
+    product.category = category || product.category;
+    product.description = description || product.description;
+    product.isActive = isActive !== undefined ? isActive : product.isActive;
+    
+    product.notes = {
+      top: topNotes || product.notes.top,
+      heart: heartNotes || product.notes.heart,
+      base: baseNotes || product.notes.base
+    };
+
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error("Update Product Error:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+};

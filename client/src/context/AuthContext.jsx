@@ -40,8 +40,8 @@ export function AuthProvider({ children }) {
 
   const register = async ({ name, email, password }) => {
     const data = await authService.register({ name, email, password });
-    setToken(data?.token);
-    setUser(data?.user);
+    // setToken(data?.token); // এটি কমেন্ট করুন বা সরিয়ে দিন
+    // setUser(data?.user);   // এটিও সরিয়ে দিন
     return data;
   };
 

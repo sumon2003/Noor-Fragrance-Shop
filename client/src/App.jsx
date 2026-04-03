@@ -34,7 +34,7 @@ export default function App() {
       <Route path="/cart" element={<Cart />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/verify-email/:token" element={<VerifyEmail />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/checkout" element={<Checkout />} />
 
       {/* --- Admin Protected Routes --- */}

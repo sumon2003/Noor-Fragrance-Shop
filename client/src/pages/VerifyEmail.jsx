@@ -1,123 +1,95 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom"; // useNavigate যোগ করা হয়েছে
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { CheckCircle2, XCircle, Loader2, PartyPopper } from "lucide-react";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:5000";
 
 export default function VerifyEmail() {
-  const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+  const nav = useNavigate(); // এখানে nav ফাংশনটি ডিফাইন করা হলো
 
-  const [status, setStatus] = useState("loading"); // loading | success | error
+  const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("Verifying your email...");
 
   useEffect(() => {
-  let alive = true;
+    let alive = true;
 
-  (async () => {
-    try {
-      setStatus("loading");
-      setMessage("Verifying your email...");
-
-      // এখানে '/verify-email/' অংশটি নিশ্চিত করুন
-      const url = `${API_BASE}/api/auth/verify-email/${token}`;
-      console.log("🚀 Sending request to:", url); // কনসোলে ইউআরএল চেক করার জন্য
-
-      const res = await fetch(url);
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        // যদি সার্ভার 400 দেয়, তবে এখানে ক্যাচ হবে
-        throw new Error(data?.message || "Verification failed");
+    const doVerify = async () => {
+      if (!token) {
+        setStatus("error");
+        setMessage("No token provided.");
+        return;
       }
 
-      if (!alive) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/verify-email/${token}`);
+        const data = await res.json();
 
-      setStatus("success");
-      setMessage(data?.message || "Email verified successfully!");
-    } catch (e) {
-      if (!alive) return;
-      setStatus("error");
-      setMessage(e?.message || "Invalid or expired verification link");
-    }
-  })();
+        if (!alive) return;
 
-  return () => {
-    alive = false;
-  };
-}, [token]);
+        if (res.ok) {
+          setStatus("success");
+          setMessage("Congratulations! Your email is verified.");
+          
+          // ৩ সেকেন্ড পর লগইন পেজে রিডাইরেক্ট
+          setTimeout(() => {
+            if (alive) nav("/login"); // এখন এটি কাজ করবে
+          }, 3000);
+        } else {
+          throw new Error(data.message || "Verification failed");
+        }
+      } catch (e) {
+        if (!alive) return;
+        setStatus("error");
+        setMessage(e.message);
+      }
+    };
+
+    doVerify();
+    return () => { alive = false; };
+  }, [token, nav]); // dependency list এ nav যোগ করা হলো
 
   return (
-    <div className="min-h-screen text-amber-50/90">
+    <div className="min-h-screen text-amber-50/90 bg-black">
       <Navbar />
-
-      <main className="max-w-xl mx-auto px-4 py-14">
-        <div className="rounded-3xl bg-white/5 ring-1 ring-amber-300/10 p-6">
-          <h1 className="text-2xl font-semibold">Email Verification</h1>
-
-          <div className="mt-4 text-amber-50/70">{message}</div>
-
+      <main className="max-w-xl mx-auto px-4 py-20 min-h-[70vh] flex items-center justify-center">
+        {/* বাকি ডিজাইন যা ছিল সব ঠিক আছে... */}
+        <div className="w-full rounded-[3rem] bg-white/5 border border-amber-300/10 p-10 backdrop-blur-xl text-center shadow-2xl relative overflow-hidden">
+          
           {status === "loading" && (
-            <div className="mt-6 rounded-2xl bg-black/30 ring-1 ring-amber-300/10 p-4 text-sm text-amber-50/70">
-              Please wait…
+            <div className="space-y-6 animate-pulse">
+              <div className="flex justify-center"><Loader2 size={64} className="text-amber-300 animate-spin" /></div>
+              <h1 className="text-2xl font-bold text-white">Verifying...</h1>
             </div>
           )}
 
           {status === "success" && (
-            <div className="mt-6">
-              <div className="rounded-2xl bg-emerald-400/10 ring-1 ring-emerald-400/20 p-4 text-emerald-200 text-sm">
-                ✅ Verified! Now you can login.
-              </div>
-
-              <div className="mt-5 flex flex-col sm:flex-row gap-3">
-                <Link
-                  to="/login"
-                  className="inline-flex justify-center px-5 py-3 rounded-2xl bg-amber-300 text-black font-semibold hover:bg-amber-200 transition"
-                >
-                  Go to Login
-                </Link>
-
-                <Link
-                  to="/"
-                  className="inline-flex justify-center px-5 py-3 rounded-2xl bg-white/5 ring-1 ring-amber-300/12 text-amber-50/80 hover:ring-amber-300/30 transition"
-                >
-                  Back Home
-                </Link>
+            <div className="space-y-6 animate-in zoom-in duration-500">
+              <div className="flex justify-center"><div className="p-6 rounded-full bg-amber-300/10 text-amber-300"><PartyPopper size={64} /></div></div>
+              <h1 className="text-4xl font-black text-white">Congratulations!</h1>
+              <p className="text-amber-50/70 text-lg">Your email is verified. Redirecting to login...</p>
+              <div className="pt-6">
+                <Link to="/login" className="inline-flex items-center justify-center gap-2 w-full px-8 py-5 rounded-2xl bg-amber-300 text-black font-bold">Go to Login <CheckCircle2 size={20} /></Link>
               </div>
             </div>
           )}
 
           {status === "error" && (
-            <div className="mt-6">
-              <div className="rounded-2xl bg-red-500/10 ring-1 ring-red-500/20 p-4 text-red-200 text-sm">
-                ❌ {message}
-              </div>
-
-              <div className="mt-5 flex flex-col sm:flex-row gap-3">
-                <Link
-                  to="/register"
-                  className="inline-flex justify-center px-5 py-3 rounded-2xl bg-amber-300 text-black font-semibold hover:bg-amber-200 transition"
-                >
-                  Register Again
-                </Link>
-
-                <Link
-                  to="/login"
-                  className="inline-flex justify-center px-5 py-3 rounded-2xl bg-white/5 ring-1 ring-amber-300/12 text-amber-50/80 hover:ring-amber-300/30 transition"
-                >
-                  Try Login
-                </Link>
-              </div>
-
-              <div className="mt-4 text-xs text-amber-50/50">
-                Tip: link expired হলে “Resend verification” আমরা next step এ add করবো।
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="flex justify-center"><div className="p-6 rounded-full bg-red-500/10 text-red-400"><XCircle size={64} /></div></div>
+              <h1 className="text-3xl font-bold text-white">Oops!</h1>
+              <p className="text-red-200/60">{message}</p>
+              <div className="pt-6 flex flex-col gap-3">
+                <Link to="/register" className="w-full py-4 rounded-2xl bg-amber-300 text-black font-bold">Try Registering Again</Link>
               </div>
             </div>
           )}
         </div>
       </main>
-
       <Footer />
     </div>
   );

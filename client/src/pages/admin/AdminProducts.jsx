@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/admin.service';
-import { Plus, Package, Edit2, Trash2, Loader2, ExternalLink } from 'lucide-react';
+import { Plus, Package, Edit2, Trash2, Loader2, ExternalLink, EyeOff, Eye } from 'lucide-react';
 
 const AdminProducts = () => {
   const nav = useNavigate();
@@ -26,12 +26,12 @@ const AdminProducts = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+    if (window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
       try {
         await adminService.deleteProduct(id);
         setProducts(prev => prev.filter(p => p._id !== id));
       } catch (err) {
-        alert("Delete failed!");
+        alert("Delete failed! Please try again.");
       }
     }
   };
@@ -63,7 +63,6 @@ const AdminProducts = () => {
         </button>
       </div>
 
-      {/* products?.length */}
       {(!products || products.length === 0) ? (
         <div className="bg-white/5 border border-amber-300/10 rounded-[2.5rem] overflow-hidden backdrop-blur-md">
           <div className="p-24 text-center space-y-6">
@@ -79,18 +78,32 @@ const AdminProducts = () => {
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {products.map((product) => (
-            <div key={product._id} className="group bg-white/5 border border-white/5 hover:border-amber-300/20 p-4 rounded-3xl backdrop-blur-sm transition-all duration-300 flex items-center gap-6">
-              <div className="h-24 w-24 rounded-2xl overflow-hidden bg-black/40 border border-white/10 shrink-0">
+            <div key={product._id} className={`group bg-white/5 border border-white/5 hover:border-amber-300/20 p-4 rounded-3xl backdrop-blur-sm transition-all duration-300 flex items-center gap-6 ${!product.isActive ? 'opacity-75' : ''}`}>
+              
+              {/* Image with Status Overlay */}
+              <div className="h-24 w-24 rounded-2xl overflow-hidden bg-black/40 border border-white/10 shrink-0 relative">
                 <img 
                   src={product.image} 
                   alt={product.name} 
-                  className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className={`h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ${!product.isActive ? 'grayscale' : ''}`}
                   onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=No+Image'}
                 />
+                {!product.isActive && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <EyeOff size={20} className="text-white/60" />
+                  </div>
+                )}
               </div>
 
+              {/* Product Info */}
               <div className="flex-1 min-w-0">
-                <h4 className="text-lg font-bold text-white truncate">{product.name}</h4>
+                <div className="flex items-center gap-3">
+                  <h4 className="text-lg font-bold text-white truncate">{product.name}</h4>
+                  {product.isActive ? 
+                    <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span> : 
+                    <span className="flex h-2 w-2 rounded-full bg-red-500"></span>
+                  }
+                </div>
                 <div className="flex flex-wrap gap-2 mt-1">
                   <span className="text-[10px] uppercase tracking-widest font-bold bg-amber-300/10 text-amber-300 px-2 py-1 rounded-md border border-amber-300/10">
                     {product.category}
@@ -101,6 +114,7 @@ const AdminProducts = () => {
                 </div>
               </div>
 
+              {/* Pricing Section */}
               <div className="hidden sm:block text-right px-4">
                 <p className="text-[10px] text-white/30 uppercase font-bold">Starts From</p>
                 <p className="text-xl font-black text-amber-300">
@@ -108,19 +122,31 @@ const AdminProducts = () => {
                 </p>
               </div>
 
+              {/* Action Buttons */}
               <div className="flex items-center gap-2">
+                {/* View Button */}
                 <button 
                   onClick={() => nav(`/product/${product._id}`)}
                   className="p-3 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition"
+                  title="View Product"
                 >
                   <ExternalLink size={18} />
                 </button>
-                <button className="p-3 bg-white/5 text-blue-400/60 hover:text-blue-400 hover:bg-blue-400/10 rounded-xl transition">
+
+                {/* Edit Button */}
+                <button 
+                  onClick={() => nav(`/admin/products/edit/${product._id}`)}
+                  className="p-3 bg-white/5 text-blue-400/60 hover:text-blue-400 hover:bg-blue-400/10 rounded-xl transition"
+                  title="Edit Product"
+                >
                   <Edit2 size={18} />
                 </button>
+
+                {/* Delete Button */}
                 <button 
                   onClick={() => handleDelete(product._id)}
                   className="p-3 bg-white/5 text-red-400/60 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition"
+                  title="Delete Product"
                 >
                   <Trash2 size={18} />
                 </button>

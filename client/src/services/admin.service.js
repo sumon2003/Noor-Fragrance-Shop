@@ -64,4 +64,12 @@ const adminService = {
   getAllProductsAdmin,
 };
 
+export const getAllOrders = async () => {
+  return await api.get('/orders/admin'); 
+};
+
+export const updateOrderStatus = async (id, status) => {
+  return await api.put(`/orders/${id}/status`, { status });
+};
+
 export default adminService;

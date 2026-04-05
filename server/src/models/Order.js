@@ -14,9 +14,10 @@ const orderSchema = new mongoose.Schema(
     orderItems: [
       {
         name: { type: String, required: true },
-        quantity: { type: Number, required: true },
+        quantity: { type: Number, required: true }, //
         image: { type: String, required: true },
         price: { type: Number, required: true },
+        size: { type: String, required: true }, 
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
@@ -31,6 +32,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: { type: String, default: "Cash on Delivery" },
     totalPrice: { type: Number, required: true },
+    status: { type: String, default: "Pending" }, 
     isPaid: { type: Boolean, default: false },
     isDelivered: { type: Boolean, default: false },
   },

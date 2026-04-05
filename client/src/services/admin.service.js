@@ -18,7 +18,6 @@ const uploadProduct = async (formData) => {
   }
 };
 
-// --- নতুন ফাংশন: সিঙ্গেল প্রোডাক্ট ডাটা ফেচ করা (এডিট করার জন্য) ---
 const getProductByIdAdmin = async (id) => {
   try {
     return await api.get(`/products/${id}`);
@@ -27,11 +26,8 @@ const getProductByIdAdmin = async (id) => {
     throw error;
   }
 };
-
-// --- নতুন ফাংশন: প্রোডাক্ট আপডেট করা ---
 const updateProduct = async (id, formData) => {
   try {
-    // এখানে FormData ব্যবহার করা হচ্ছে কারণ ইমেজের ব্যাপার আছে
     return await api.put(`/products/${id}`, formData);
   } catch (error) {
     console.error("Error updating product:", error);
@@ -62,8 +58,8 @@ const getAllProductsAdmin = async () => {
 const adminService = {
   getStats,
   uploadProduct,
-  getProductByIdAdmin, // এক্সপোর্ট করা হলো
-  updateProduct,      // এক্সপোর্ট করা হলো
+  getProductByIdAdmin, 
+  updateProduct,      
   deleteProduct,
   getAllProductsAdmin,
 };

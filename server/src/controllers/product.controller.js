@@ -1,6 +1,6 @@
 import Product from "../models/Product.js";
 
-// ১. সব প্রোডাক্ট দেখা (User Side)
+// all product showing
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find({ isActive: true }).sort({ createdAt: -1 });
@@ -9,7 +9,7 @@ export const getProducts = async (req, res) => {
       const obj = p.toObject();
       return {
         ...obj,
-        image: obj.image || obj.imageUrl || "",
+        image: obj.image || obj.imageUrl || "", //
       };
     });
 
@@ -19,7 +19,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
-// ২. সিঙ্গেল প্রোডাক্ট দেখা (Details Page)
+// single product showing
 export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -30,14 +30,14 @@ export const getProductById = async (req, res) => {
     const obj = product.toObject();
     res.json({
       ...obj,
-      image: obj.image || obj.imageUrl || "",
+      image: obj.image || obj.imageUrl || "", //
     });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch product" });
   }
 };
 
-// ৩. নতুন প্রোডাক্ট তৈরি (Admin Side - Cloudinary Support)
+// create product
 export const createProduct = async (req, res) => {
   try {
     const { 
@@ -46,26 +46,24 @@ export const createProduct = async (req, res) => {
       ingredients, variants 
     } = req.body;
 
-    // ১. Variants safe parsing
     let parsedVariants = [];
     if (variants) {
-      parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+      parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants; //
     }
 
-    // ২. Ingredients safe parsing
     let parsedIngredients = [];
     if (ingredients) {
       parsedIngredients = typeof ingredients === 'string' 
         ? ingredients.split(',').map(i => i.trim()).filter(i => i !== "") 
-        : (Array.isArray(ingredients) ? ingredients : []);
+        : (Array.isArray(ingredients) ? ingredients : []); //
     }
 
     const newProduct = new Product({
       name,
-      slug,
+      slug: slug || name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
       category,
       description: description || "",
-      image: req.file ? req.file.path : "", 
+      image: req.file ? req.file.path : "", //
       notes: {
         top: topNotes || "",
         heart: heartNotes || "",
@@ -83,18 +81,18 @@ export const createProduct = async (req, res) => {
   }
 };
 
-// ৪. প্রোডাক্ট ডিলিট করা
+// delete product
 export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    await Product.findByIdAndDelete(id);
+    await Product.findByIdAndDelete(id); //
     res.json({ message: "Product deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: "Delete failed" });
   }
 };
 
-// ৫. প্রোডাক্ট আপডেট করা (Admin Side)
+// product update(Admin Side)
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -107,34 +105,39 @@ export const updateProduct = async (req, res) => {
     const product = await Product.findById(id);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
-    // ১. Variants safe parsing
+    // Variants safe parsing 
     if (variants) {
-      product.variants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+      product.variants = typeof variants === 'string' ? JSON.parse(variants) : variants; //
     }
 
-    // ২. Ingredients safe parsing
+    // Ingredients safe parsing
     if (ingredients) {
       product.ingredients = typeof ingredients === 'string' 
         ? ingredients.split(',').map(i => i.trim()).filter(i => i !== "") 
-        : (Array.isArray(ingredients) ? ingredients : product.ingredients);
+        : (Array.isArray(ingredients) ? ingredients : product.ingredients); //
     }
 
-    // ৩. নতুন ইমেজ থাকলে আপডেট করা
+    // new image handling 
     if (req.file) {
       product.image = req.file.path; 
     }
 
-    // ৪. অন্যান্য ফিল্ড আপডেট
-    product.name = name || product.name;
-    product.slug = slug || product.slug;
-    product.category = category || product.category;
-    product.description = description || product.description;
-    product.isActive = isActive !== undefined ? isActive : product.isActive;
+   
+    product.name = name !== undefined ? name : product.name;
+    product.slug = slug !== undefined ? slug : product.slug;
+    product.category = category !== undefined ? category : product.category;
+    product.description = description !== undefined ? description : product.description;
     
+    // isActive handling (string to boolean conversion)
+    if (isActive !== undefined) {
+      product.isActive = String(isActive) === 'true'; //
+    }
+    
+    // Scent Notes update
     product.notes = {
-      top: topNotes || product.notes.top,
-      heart: heartNotes || product.notes.heart,
-      base: baseNotes || product.notes.base
+      top: topNotes !== undefined ? topNotes : product.notes.top,
+      heart: heartNotes !== undefined ? heartNotes : product.notes.heart,
+      base: baseNotes !== undefined ? baseNotes : product.notes.base
     };
 
     const updatedProduct = await product.save();

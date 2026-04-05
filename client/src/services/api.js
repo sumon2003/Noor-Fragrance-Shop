@@ -20,6 +20,8 @@ async function request(path, options = {}) {
     headers["Content-Type"] = "application/json";
   }
 
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,

@@ -1,5 +1,6 @@
 import { api } from "./api";
 
+// --- Stats & Dashboard ---
 const getStats = async () => {
   try {
     return await api.get("/admin/stats");
@@ -9,6 +10,7 @@ const getStats = async () => {
   }
 };
 
+// --- Product Management ---
 const uploadProduct = async (formData) => {
   try {
     return await api.post("/products", formData);
@@ -26,6 +28,7 @@ const getProductByIdAdmin = async (id) => {
     throw error;
   }
 };
+
 const updateProduct = async (id, formData) => {
   try {
     return await api.put(`/products/${id}`, formData);
@@ -55,6 +58,27 @@ const getAllProductsAdmin = async () => {
   }
 };
 
+// --- Order Management ---
+const getAllOrders = async () => {
+  try {
+    const response = await api.get('/orders/admin');
+    return response?.data || response; 
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    throw error;
+  }
+};
+
+const updateOrderStatus = async (id, status) => {
+  try {
+    return await api.put(`/orders/${id}/status`, { status });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    throw error;
+  }
+};
+
+// --- Export Section ---
 const adminService = {
   getStats,
   uploadProduct,
@@ -62,14 +86,10 @@ const adminService = {
   updateProduct,      
   deleteProduct,
   getAllProductsAdmin,
+  getAllOrders,    
+  updateOrderStatus 
 };
 
-export const getAllOrders = async () => {
-  return await api.get('/orders/admin'); 
-};
-
-export const updateOrderStatus = async (id, status) => {
-  return await api.put(`/orders/${id}/status`, { status });
-};
+export { getAllOrders, updateOrderStatus };
 
 export default adminService;

@@ -14,12 +14,13 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from "./pages/admin/AdminProducts";
 import AddProduct from "./pages/admin/AddProduct";
 import EditProduct from "./pages/admin/EditProduct";
+import AdminOrders from "./pages/admin/Orders"; 
+
 import { useAuth } from './context/AuthContext';
 
 export default function App() {
   const { user, loading } = useAuth();
 
-  // পেজ লোড হওয়ার সময় এম্বার কালারের স্পিনার দেখাবে
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
       <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-amber-300"></div>
@@ -43,12 +44,22 @@ export default function App() {
         path="/admin" 
         element={user && user.isAdmin ? <AdminLayout /> : <Navigate to="/login" replace />}
       >
-        {/* /admin */}
+        {/* URL: /admin */}
         <Route index element={<AdminDashboard />} />
+        
+        {/* URL: /admin/products */}
         <Route path="products" element={<AdminProducts />} /> 
         <Route path="products/add" element={<AddProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
+        
+        {/* URL: /admin/orders */}
+        <Route path="orders" element={<AdminOrders />} /> 
+        
+        {/* URL: /admin/users */}
+        <Route path="users" element={<div className="p-8 text-white">Users Management Coming Soon...</div>} />
       </Route>
+
+      {/* --- 404 Redirect --- */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

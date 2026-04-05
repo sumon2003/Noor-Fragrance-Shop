@@ -18,10 +18,12 @@ const Orders = () => {
 
   const fetchOrders = async () => {
     try {
-      const data = await adminService.getAllOrders();
-      setOrders(data);
+      const response = await adminService.getAllOrders();
+      const orderData = response?.data || response;
+      setOrders(Array.isArray(orderData) ? orderData : []);
     } catch (err) {
       console.error("Failed to fetch orders:", err);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -95,33 +97,34 @@ const Orders = () => {
             </thead>
             <tbody className="divide-y divide-amber-300/5">
               {orders.map((order) => (
-                <tr key={order._id} className="hover:bg-white/[0.02] transition-colors group">
+                <tr key={order?._id} className="hover:bg-white/[0.02] transition-colors group">
                   <td className="px-8 py-6">
-                    <span className="font-mono text-xs text-amber-50/40">#{order._id.slice(-6).toUpperCase()}</span>
+                    <span className="font-mono text-xs text-amber-50/40">#{order?._id?.slice(-6).toUpperCase() || "N/A"}</span>
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex flex-col">
                       <span className="font-bold text-white group-hover:text-amber-300 transition-colors">
-                        {order.user?.name || order.guestInfo?.name}
+                        {order?.user?.name || order?.guestInfo?.name || "Guest"}
                       </span>
-                      <span className="text-[10px] text-amber-50/30">{order.shippingAddress?.phone}</span>
+                      <span className="text-[10px] text-amber-50/30">{order?.shippingAddress?.phone}</span>
                     </div>
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex -space-x-3">
-                      {order.orderItems.map((item, idx) => (
-                        <div key={idx} className="h-10 w-10 rounded-xl border-2 border-[#0a0a0a] overflow-hidden bg-black/40 relative group/img" title={`${item.name} (${item.size})`}>
-                          <img src={item.image} alt="" className="h-full w-full object-cover group-hover/img:scale-110 transition-transform" />
+                      {order?.orderItems?.map((item, idx) => (
+                        <div key={idx} className="h-10 w-10 rounded-xl border-2 border-[#0a0a0a] overflow-hidden bg-black/40 relative group/img" title={`${item?.name} (${item?.size})`}>
+                          <img src={item?.image || '/placeholder.png'} alt="" className="h-full w-full object-cover group-hover/img:scale-110 transition-transform" />
                         </div>
                       ))}
                     </div>
                   </td>
                   <td className="px-8 py-6 font-black text-amber-300">
-                    ৳{order.totalPrice.toLocaleString()}
+                    {/* toLocaleString এরর ফিক্স */}
+                    ৳{order?.totalPrice?.toLocaleString() || "0"}
                   </td>
                   <td className="px-8 py-6">
-                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest ${getStatusStyle(order.status)}`}>
-                      {order.status}
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest ${getStatusStyle(order?.status)}`}>
+                      {order?.status || "Pending"}
                     </span>
                   </td>
                   <td className="px-8 py-6">
@@ -156,10 +159,10 @@ const Orders = () => {
             <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`w-2 h-2 rounded-full animate-pulse ${selectedOrder.status === 'Delivered' ? 'bg-emerald-500' : 'bg-amber-300'}`}></span>
+                  <span className={`w-2 h-2 rounded-full animate-pulse ${selectedOrder?.status === 'Delivered' ? 'bg-emerald-500' : 'bg-amber-300'}`}></span>
                   <h3 className="text-xl font-black text-white tracking-tight uppercase">Order Details</h3>
                 </div>
-                <p className="text-[10px] text-amber-300/50 tracking-[0.2em] font-bold uppercase">Transaction: #{selectedOrder._id}</p>
+                <p className="text-[10px] text-amber-300/50 tracking-[0.2em] font-bold uppercase">Transaction: #{selectedOrder?._id}</p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="p-3 bg-white/5 hover:bg-red-500/10 hover:text-red-400 rounded-2xl transition-all text-white/40"><X size={20}/></button>
             </div>
@@ -172,17 +175,17 @@ const Orders = () => {
                 <section>
                   <h4 className="text-[10px] font-black text-amber-300 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><User size={14}/> Customer Information</h4>
                   <div className="space-y-4 bg-white/[0.03] p-5 rounded-3xl border border-white/5">
-                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><User size={16} className="text-amber-300/60"/> {selectedOrder.user?.name || selectedOrder.guestInfo?.name}</div>
-                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><Phone size={16} className="text-amber-300/60"/> {selectedOrder.shippingAddress.phone}</div>
-                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><Mail size={16} className="text-amber-300/60"/> {selectedOrder.user?.email || selectedOrder.guestInfo?.email}</div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><User size={16} className="text-amber-300/60"/> {selectedOrder?.user?.name || selectedOrder?.guestInfo?.name}</div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><Phone size={16} className="text-amber-300/60"/> {selectedOrder?.shippingAddress?.phone}</div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><Mail size={16} className="text-amber-300/60"/> {selectedOrder?.user?.email || selectedOrder?.guestInfo?.email}</div>
                   </div>
                 </section>
 
                 <section>
                   <h4 className="text-[10px] font-black text-amber-300 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><MapPin size={14}/> Shipping Address</h4>
                   <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 text-sm leading-relaxed">
-                    <p className="text-amber-300 font-black mb-2 flex items-center gap-2"><MapPin size={14}/> {selectedOrder.shippingAddress.city}</p>
-                    <p className="text-white/60 font-medium">{selectedOrder.shippingAddress.address}</p>
+                    <p className="text-amber-300 font-black mb-2 flex items-center gap-2"><MapPin size={14}/> {selectedOrder?.shippingAddress?.city}</p>
+                    <p className="text-white/60 font-medium">{selectedOrder?.shippingAddress?.address}</p>
                   </div>
                 </section>
               </div>
@@ -192,14 +195,14 @@ const Orders = () => {
                 <section>
                   <h4 className="text-[10px] font-black text-amber-300 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Package size={14}/> Order Items</h4>
                   <div className="space-y-3">
-                    {selectedOrder.orderItems.map((item, i) => (
+                    {selectedOrder?.orderItems?.map((item, i) => (
                       <div key={i} className="flex items-center gap-4 bg-white/[0.03] p-3 rounded-2xl border border-white/5 group/item">
-                        <img src={item.image} className="w-14 h-14 rounded-xl object-cover ring-1 ring-white/10 group-hover/item:ring-amber-300/30 transition-all" alt="" />
+                        <img src={item?.image || '/placeholder.png'} className="w-14 h-14 rounded-xl object-cover ring-1 ring-white/10 group-hover/item:ring-amber-300/30 transition-all" alt="" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-black text-white truncate">{item.name}</p>
-                          <p className="text-[10px] font-bold text-amber-300/60 mt-1 uppercase">Size: {item.size} | Qty: {item.quantity}</p>
+                          <p className="text-xs font-black text-white truncate">{item?.name}</p>
+                          <p className="text-[10px] font-bold text-amber-300/60 mt-1 uppercase">Size: {item?.size} | Qty: {item?.quantity}</p>
                         </div>
-                        <div className="text-xs font-black text-amber-300 italic">৳{item.price * item.quantity}</div>
+                        <div className="text-xs font-black text-amber-300 italic">৳{(item?.price * item?.quantity) || 0}</div>
                       </div>
                     ))}
                   </div>
@@ -208,11 +211,12 @@ const Orders = () => {
                 <section className="p-6 bg-amber-300/[0.03] rounded-[2rem] border border-amber-300/10">
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-[10px] font-black uppercase text-white/40 tracking-widest flex items-center gap-2"><CreditCard size={12}/> Payment</span>
-                    <span className="text-[10px] font-black uppercase text-amber-300 bg-amber-300/10 px-3 py-1 rounded-full">{selectedOrder.paymentMethod}</span>
+                    <span className="text-[10px] font-black uppercase text-amber-300 bg-amber-300/10 px-3 py-1 rounded-full">{selectedOrder?.paymentMethod}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-black text-white uppercase tracking-tighter">Total Price</span>
-                    <span className="text-3xl font-black text-amber-300 tracking-tighter">৳{selectedOrder.totalPrice.toLocaleString()}</span>
+                    {/*  */}
+                    <span className="text-3xl font-black text-amber-300 tracking-tighter">৳{selectedOrder?.totalPrice?.toLocaleString() || "0"}</span>
                   </div>
                 </section>
               </div>
@@ -220,9 +224,9 @@ const Orders = () => {
 
             {/* Modal Footer: Action Buttons */}
             <div className="p-8 bg-white/[0.02] border-t border-white/5 grid grid-cols-3 gap-4">
-              <button onClick={() => handleStatusUpdate(selectedOrder._id, 'Processing')} className="py-4 bg-amber-300/5 text-amber-300 border border-amber-300/10 rounded-2xl text-[10px] font-black tracking-[0.2em] hover:bg-amber-300 hover:text-black transition-all active:scale-95 uppercase">Processing</button>
-              <button onClick={() => handleStatusUpdate(selectedOrder._id, 'Shipped')} className="py-4 bg-blue-500/5 text-blue-400 border border-blue-500/10 rounded-2xl text-[10px] font-black tracking-[0.2em] hover:bg-blue-500 hover:text-white transition-all active:scale-95 uppercase">Shipped</button>
-              <button onClick={() => handleStatusUpdate(selectedOrder._id, 'Delivered')} className="py-4 bg-emerald-500/5 text-emerald-400 border border-emerald-500/10 rounded-2xl text-[10px] font-black tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all active:scale-95 uppercase">Delivered</button>
+              <button onClick={() => handleStatusUpdate(selectedOrder?._id, 'Processing')} className="py-4 bg-amber-300/5 text-amber-300 border border-amber-300/10 rounded-2xl text-[10px] font-black tracking-[0.2em] hover:bg-amber-300 hover:text-black transition-all active:scale-95 uppercase">Processing</button>
+              <button onClick={() => handleStatusUpdate(selectedOrder?._id, 'Shipped')} className="py-4 bg-blue-500/5 text-blue-400 border border-blue-500/10 rounded-2xl text-[10px] font-black tracking-[0.2em] hover:bg-blue-500 hover:text-white transition-all active:scale-95 uppercase">Shipped</button>
+              <button onClick={() => handleStatusUpdate(selectedOrder?._id, 'Delivered')} className="py-4 bg-emerald-500/5 text-emerald-400 border border-emerald-500/10 rounded-2xl text-[10px] font-black tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all active:scale-95 uppercase">Delivered</button>
             </div>
           </div>
         </div>

@@ -37,38 +37,57 @@ const Checkout = () => {
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    
+    if (items.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const orderData = {
-        orderItems: items.map(i => ({
-          name: i.snapshot.name,
-          quantity: i.qty, //
-          image: i.snapshot.image,
-          price: i.snapshot.price,
-          size: i.variantSize || i.snapshot.size, 
-          product: i.productId
-        })),
+        orderItems: items.map(i => {
+          let finalSize = "Regular"; 
+          
+          if (i.variantSize) {
+            finalSize = i.variantSize;
+          } else if (i.snapshot?.size) {
+            finalSize = Array.isArray(i.snapshot.size) ? i.snapshot.size[0] : i.snapshot.size;
+          }
+
+          return {
+            name: i.snapshot?.name || "Product",
+            quantity: Number(i.qty), 
+            image: i.snapshot?.image || "",
+            price: Number(i.snapshot?.price || 0),
+            size: String(finalSize), 
+            product: i.productId
+          };
+        }),
         shippingAddress: {
-          phone: formData.phone, //
+          phone: formData.phone,
           city: formData.city,
           address: formData.address
         },
         paymentMethod: "Cash on Delivery",
-        totalPrice: subtotal,
-        // guestInfo 
+        totalPrice: Number(subtotal),
         guestInfo: !user ? { name: formData.name, email: formData.email } : null
       };
 
-      await orderService.createOrder(orderData);
+      // api call to create order
+      const response = await orderService.createOrder(orderData);
       
-      // Success Alert and Redirect
-      alert("Order Placed Successfully!");
-      clearCart();
-      navigate('/products'); 
+      if (response) {
+        alert("Order Placed Successfully!");
+        clearCart();
+        navigate('/products'); 
+      }
     } catch (error) {
       console.error("Checkout Error:", error);
-      alert(error.response?.data?.message || error.message || "Order failed to place.");
+      // সার্ভার থেকে আসা স্পেসিফিক এরর মেসেজ দেখানো
+      const errorMsg = error.response?.data?.message || error.message || "Order failed to place.";
+      alert(`Error: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
@@ -86,7 +105,6 @@ const Checkout = () => {
           </div>
 
           <form onSubmit={handlePlaceOrder} className="space-y-6">
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-amber-300/50 uppercase ml-1 tracking-widest flex items-center gap-2"><User size={12}/> Full Name</label>
@@ -166,16 +184,18 @@ const Checkout = () => {
                 <div key={`${i.productId}_${i.variantId}`} className="flex justify-between gap-4 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
                   <div className="flex gap-4 items-center">
                      <div className="relative h-16 w-16 rounded-2xl overflow-hidden ring-1 ring-white/10 shrink-0">
-                        <img src={i.snapshot.image} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" alt={i.snapshot.name} />
+                        <img src={i.snapshot?.image} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" alt={i.snapshot?.name} />
                         <div className="absolute top-0 right-0 bg-amber-300 text-black text-[10px] font-black px-1.5 py-0.5 rounded-bl-lg leading-none">{i.qty}</div>
                      </div>
                      <div className="space-y-1">
-                       <p className="font-bold text-white group-hover:text-amber-300 transition-colors leading-none">{i.snapshot.name}</p>
-                       <p className="text-[10px] text-amber-50/40 uppercase tracking-widest font-bold">Size: {i.variantSize || i.snapshot.size}</p>
+                       <p className="font-bold text-white group-hover:text-amber-300 transition-colors leading-none">{i.snapshot?.name}</p>
+                       <p className="text-[10px] text-amber-50/40 uppercase tracking-widest font-bold">
+                         Size: {i.variantSize || (Array.isArray(i.snapshot?.size) ? i.snapshot.size[0] : i.snapshot?.size) || "Regular"}
+                       </p>
                      </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-amber-300 font-black">৳{(i.snapshot.price * i.qty).toLocaleString()}</span>
+                    <span className="text-amber-300 font-black">৳{(Number(i.snapshot?.price || 0) * i.qty).toLocaleString()}</span>
                   </div>
                 </div>
               ))}

@@ -25,7 +25,7 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
     description: { type: String, default: "" },
-    // image ফিল্ডটি Cloudinary URL স্টোর করবে
+    // image Cloudinary URL 
     image: { type: String, required: true },
 
     notes: {
@@ -34,7 +34,6 @@ const productSchema = new mongoose.Schema(
       base: { type: String, default: "" },   
     },
     
-    // Controller এ আমরা split(',') করে অ্যারে বানাচ্ছি, তাই এখানে String অ্যারে রাখা হয়েছে
     ingredients: { 
       type: [String], 
       default: [] 
@@ -42,7 +41,6 @@ const productSchema = new mongoose.Schema(
 
     variants: {
       type: [variantSchema],
-      // কমপক্ষে একটি ভ্যারিয়েন্ট থাকতে হবে
       validate: {
         validator: function(v) {
           return Array.isArray(v) && v.length > 0;
@@ -56,7 +54,6 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ডুপ্লিকেট স্লাগ এরর হ্যান্ডেল করার জন্য ইনডেক্সিং
 productSchema.index({ slug: 1 });
 
 export default mongoose.model("Product", productSchema);

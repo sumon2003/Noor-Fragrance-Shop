@@ -7,7 +7,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
 import Checkout from "./pages/Checkout";
-import TrackOrder from "./pages/TrackOrder.jsx";
+import TrackOrder from "./pages/TrackOrder"; 
 
 // Admin Imports
 import AdminLayout from './pages/admin/AdminLayout';
@@ -39,29 +39,21 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/checkout" element={<Checkout />} />
-      <Route path="/track-order/:id" element={<TrackOrder />} />
+      <Route path="/track-order/:id" element={<TrackOrder />} /> 
 
       {/* --- Admin Protected Routes --- */}
       <Route 
         path="/admin" 
         element={user && user.isAdmin ? <AdminLayout /> : <Navigate to="/login" replace />}
       >
-        {/* URL: /admin */}
         <Route index element={<AdminDashboard />} />
-        
-        {/* URL: /admin/products */}
         <Route path="products" element={<AdminProducts />} /> 
         <Route path="products/add" element={<AddProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
-        
-        {/* URL: /admin/orders */}
         <Route path="orders" element={<AdminOrders />} /> 
-        
-        {/* URL: /admin/users */}
         <Route path="users" element={<div className="p-8 text-white">Users Management Coming Soon...</div>} />
       </Route>
 
-      {/* --- 404 Redirect --- */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

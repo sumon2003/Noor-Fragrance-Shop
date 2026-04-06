@@ -92,3 +92,22 @@ export const getOrderStats = asyncHandler(async (req, res) => {
 
   res.json(result);
 });
+
+export const getOrderById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  
+  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    res.status(400);
+    throw new Error("Invalid Order ID format");
+  }
+
+  const order = await Order.findById(id).populate('user', 'name email');
+
+  if (order) {
+    res.json(order);
+  } else {
+    console.log("Order not found in DB for ID:", id); 
+    res.status(404);
+    throw new Error("Order not found");
+  }
+});

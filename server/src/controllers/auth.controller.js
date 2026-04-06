@@ -59,14 +59,9 @@ export const verifyEmail = async (req, res) => {
       emailVerifyTokenExpires: { $gt: new Date() }, 
     });
 
-    // ২. যদি ইউজার না পাওয়া যায়, তবে চেক করি সে কি অলরেডি ভেরিফাইড?
     if (!user) {
-      // যদি টোকেন হ্যাশ ডাটাবেসে না থাকে, তার মানে সে অলরেডি ভেরিফাই করেছে (আমরা সেভ করার সময় টোকেন মুছে দেই)
-      // অথবা টোকেনটি ভুল। আপনার "Easy Plan" অনুযায়ী আমরা পজিটিভ রেসপন্স দিব।
       console.log("ℹ️ User might be already verified or token expired. Sending success to keep UX smooth.");
       
-      // আমরা চাইলে এখানে চেক করতে পারি ইউজারটি কি ইমেইল দিয়ে ডাটাবেসে আছে কি না
-      // কিন্তু সহজ রাখার জন্য আমরা সরাসরি ফ্রন্টএন্ডকে সাকসেস মেসেজ দিব
       return res.json({
         message: "Your email is already verified! Welcome back.",
         alreadyVerified: true
@@ -81,7 +76,6 @@ export const verifyEmail = async (req, res) => {
 
     console.log("✅ Email verified for:", user.email);
 
-    // ৪. সরাসরি লগইন টোকেন দিয়ে দেওয়া যাতে ইউজারকে কষ্ট করে আবার লগইন না করতে হয়
     const jwt = signToken({ id: user._id, role: user.role, isAdmin: user.isAdmin });
 
     return res.json({

@@ -3,8 +3,14 @@ import { api } from "./api";
 const createOrder = async (orderData) => {
   try {
     const response = await api.post("/orders", orderData);
-    return response.data;
+    console.log("Service: Server Raw Response:", response); 
+    
+    if (response.data) {
+      return response.data; 
+    }
+    return response; 
   } catch (error) {
+    console.error("Service: Order Error:", error);
     throw error;
   }
 };

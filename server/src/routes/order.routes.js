@@ -5,16 +5,19 @@ import {
   addOrderItems, 
   getOrders, 
   updateOrderStatus, 
-  getOrderStats 
+  getOrderStats,
+  getOrderById 
 } from "../controllers/order.controller.js";
+
 import { protect, optionalProtect, admin } from "../middlewares/auth.middleware.js";
 
-// user side route
-router.route("/").post(optionalProtect, addOrderItems);
-
-// admin side routes
-router.route("/admin").get(protect, admin, getOrders);
 router.get("/stats", protect, admin, getOrderStats);
+router.get("/admin", protect, admin, getOrders); 
+
+router.post("/", optionalProtect, addOrderItems);
+
+router.get('/:id', getOrderById); 
+
 router.put("/:id/status", protect, admin, updateOrderStatus);
 
 export default router;

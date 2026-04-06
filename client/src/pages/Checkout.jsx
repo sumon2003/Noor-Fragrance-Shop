@@ -49,7 +49,6 @@ const Checkout = () => {
       const orderData = {
         orderItems: items.map(i => {
           let finalSize = "Regular"; 
-          
           if (i.variantSize) {
             finalSize = i.variantSize;
           } else if (i.snapshot?.size) {
@@ -75,17 +74,23 @@ const Checkout = () => {
         guestInfo: !user ? { name: formData.name, email: formData.email } : null
       };
 
-      // api call to create order
       const response = await orderService.createOrder(orderData);
       
-      if (response) {
-        alert("Order Placed Successfully!");
+      console.log("Order Response:", response);
+
+      const newOrderId = response?._id || response?.data?._id || response?.data?.order?._id;
+
+      if (newOrderId) {
         clearCart();
-        navigate('/products'); 
+        navigate(`/track-order/${newOrderId}`); 
+      } else {
+        alert("Order Placed, but couldn't redirect to tracking page.");
+        clearCart();
+        navigate('/products');
       }
+      
     } catch (error) {
       console.error("Checkout Error:", error);
-      // সার্ভার থেকে আসা স্পেসিফিক এরর মেসেজ দেখানো
       const errorMsg = error.response?.data?.message || error.message || "Order failed to place.";
       alert(`Error: ${errorMsg}`);
     } finally {

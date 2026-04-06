@@ -7,7 +7,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
 import Checkout from "./pages/Checkout";
-import TrackOrder from './pages/TrackOrder';
+import TrackOrder from "./pages/TrackOrder.jsx";
 
 // Admin Imports
 import AdminLayout from './pages/admin/AdminLayout';
@@ -39,6 +39,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/checkout" element={<Checkout />} />
+      <Route path="/track-order/:id" element={<TrackOrder />} />
 
       {/* --- Admin Protected Routes --- */}
       <Route 
@@ -52,7 +53,6 @@ export default function App() {
         <Route path="products" element={<AdminProducts />} /> 
         <Route path="products/add" element={<AddProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
-        <Route path="track-order/:id" element={<TrackOrder />} />
         
         {/* URL: /admin/orders */}
         <Route path="orders" element={<AdminOrders />} /> 

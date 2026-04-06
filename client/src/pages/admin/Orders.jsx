@@ -119,8 +119,8 @@ const Orders = () => {
                     </div>
                   </td>
                   <td className="px-8 py-6 font-black text-amber-300">
-                    {/* toLocaleString এরর ফিক্স */}
-                    ৳{order?.totalPrice?.toLocaleString() || "0"}
+                    {/* Fixed toLocaleString error */}
+                    ৳{(order?.totalPrice || 0).toLocaleString()}
                   </td>
                   <td className="px-8 py-6">
                     <span className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest ${getStatusStyle(order?.status)}`}>
@@ -175,9 +175,9 @@ const Orders = () => {
                 <section>
                   <h4 className="text-[10px] font-black text-amber-300 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><User size={14}/> Customer Information</h4>
                   <div className="space-y-4 bg-white/[0.03] p-5 rounded-3xl border border-white/5">
-                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><User size={16} className="text-amber-300/60"/> {selectedOrder?.user?.name || selectedOrder?.guestInfo?.name}</div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><User size={16} className="text-amber-300/60"/> {selectedOrder?.user?.name || selectedOrder?.guestInfo?.name || "Guest"}</div>
                     <div className="flex items-center gap-3 text-sm font-bold text-white/80"><Phone size={16} className="text-amber-300/60"/> {selectedOrder?.shippingAddress?.phone}</div>
-                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><Mail size={16} className="text-amber-300/60"/> {selectedOrder?.user?.email || selectedOrder?.guestInfo?.email}</div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-white/80"><Mail size={16} className="text-amber-300/60"/> {selectedOrder?.user?.email || selectedOrder?.guestInfo?.email || "N/A"}</div>
                   </div>
                 </section>
 
@@ -202,7 +202,7 @@ const Orders = () => {
                           <p className="text-xs font-black text-white truncate">{item?.name}</p>
                           <p className="text-[10px] font-bold text-amber-300/60 mt-1 uppercase">Size: {item?.size} | Qty: {item?.quantity}</p>
                         </div>
-                        <div className="text-xs font-black text-amber-300 italic">৳{(item?.price * item?.quantity) || 0}</div>
+                        <div className="text-xs font-black text-amber-300 italic">৳{((item?.price || 0) * (item?.quantity || 1)).toLocaleString()}</div>
                       </div>
                     ))}
                   </div>
@@ -213,10 +213,9 @@ const Orders = () => {
                     <span className="text-[10px] font-black uppercase text-white/40 tracking-widest flex items-center gap-2"><CreditCard size={12}/> Payment</span>
                     <span className="text-[10px] font-black uppercase text-amber-300 bg-amber-300/10 px-3 py-1 rounded-full">{selectedOrder?.paymentMethod}</span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-2">
                     <span className="text-xs font-black text-white uppercase tracking-tighter">Total Price</span>
-                    {/*  */}
-                    <span className="text-3xl font-black text-amber-300 tracking-tighter">৳{selectedOrder?.totalPrice?.toLocaleString() || "0"}</span>
+                    <span className="text-3xl font-black text-amber-300 tracking-tighter">৳{(selectedOrder?.totalPrice || 0).toLocaleString()}</span>
                   </div>
                 </section>
               </div>

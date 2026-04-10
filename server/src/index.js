@@ -4,20 +4,31 @@ import app from "./app.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000; 
-const MONGO_URI = process.env.MONGO_URI;
-
-
+// MongoDB strictQuery warning handle
 mongoose.set('strictQuery', false);
 
+// Database Connection
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error(`❌ Error: ${error.message}`);
+  }
+};
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(async () => { 
-    console.log("✅ MongoDB connected");
+// Vercel handles the port automatically, 
+// but we still call connectDB
+connectDB();
 
-    app.listen(process.env.PORT, () =>
-      console.log(`🚀 Server running on port ${process.env.PORT}`)
-    );
-  })
-  .catch((err) => console.error(err));
+// Root route handle 
+app.get("/", (req, res) => {
+  res.send("API is running successfully...");
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}
+
+export default app;

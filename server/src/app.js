@@ -7,21 +7,28 @@ import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
+// CORS configuration
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
   credentials: true
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
+// api routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes); 
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 
+// health check route
 app.get("/", (req, res) => {
-  res.send("Noor Fragrance API is running...");
+  res.json({ 
+    status: "Success",
+    message: "Noor Fragrance API is running smoothly",
+    environment: process.env.NODE_ENV
+  });
 });
 
 export default app;

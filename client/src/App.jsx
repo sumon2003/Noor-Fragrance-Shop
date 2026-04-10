@@ -7,7 +7,6 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
 import Checkout from "./pages/Checkout";
-import TrackOrder from "./pages/TrackOrder"; 
 
 // Admin Imports
 import AdminLayout from './pages/admin/AdminLayout';
@@ -39,7 +38,6 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/checkout" element={<Checkout />} />
-      <Route path="/track-order/:id" element={<TrackOrder />} /> 
 
       {/* --- Admin Protected Routes --- */}
       <Route 

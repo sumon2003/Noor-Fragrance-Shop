@@ -12,13 +12,18 @@ export const addOrderItems = asyncHandler(async (req, res) => {
     throw new Error("No order items");
   }
 
+  // লগইন ইউজারের জন্য ডাটাবেস সেভ লজিক
   const order = new Order({
     orderItems,
     shippingAddress,
     totalPrice,
     paymentMethod, 
     user: req.user ? req.user._id : null,
-    guestInfo: req.user ? null : guestInfo, 
+    // সমাধান: এখানে সরাসরি অবজেক্টটি ডিফাইন করে দিন
+    guestInfo: {
+        name: guestInfo?.name || (req.user ? req.user.name : ""),
+        email: guestInfo?.email || (req.user ? req.user.email : "")
+    }
   });
 
   const createdOrder = await order.save();
@@ -42,7 +47,9 @@ export const addOrderItems = asyncHandler(async (req, res) => {
 // @desc    Get all orders for Admin
 // @route   GET /api/orders/admin
 export const getOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({}).populate('user', 'name email').sort({ createdAt: -1 });
+  const orders = await Order.find({})
+    .populate('user', 'name email')
+    .sort({ createdAt: -1 });
   res.json(orders);
 });
 
@@ -93,9 +100,12 @@ export const getOrderStats = asyncHandler(async (req, res) => {
   res.json(result);
 });
 
+// @desc    Get order by ID (Internal/Admin)
+// @route   GET /api/orders/:id
 export const getOrderById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   
+  // ID ফরম্যাট ভ্যালিডেশন
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
     res.status(400);
     throw new Error("Invalid Order ID format");
@@ -106,7 +116,6 @@ export const getOrderById = asyncHandler(async (req, res) => {
   if (order) {
     res.json(order);
   } else {
-    console.log("Order not found in DB for ID:", id); 
     res.status(404);
     throw new Error("Order not found");
   }

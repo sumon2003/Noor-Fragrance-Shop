@@ -3,13 +3,25 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext'; 
 import orderService from '../services/order.service';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, CheckCircle, MapPin, Phone, Mail, User, ShoppingBag } from 'lucide-react';
+import { 
+  Loader2, 
+  CheckCircle, 
+  MapPin, 
+  Phone, 
+  Mail, 
+  User, 
+  ShoppingBag, 
+  PhoneCall, 
+  Home, 
+  ArrowRight 
+} from 'lucide-react';
 
 const Checkout = () => {
   const { items, subtotal, clearCart } = useCart();
   const { user } = useAuth(); 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -20,7 +32,7 @@ const Checkout = () => {
     address: '',
   });
 
-  // Auto-fill for logged-in users
+  // Auto-fill for logged-in users initially
   useEffect(() => {
     if (user) {
       setFormData((prev) => ({
@@ -36,92 +48,118 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async (e) => {
-  e.preventDefault();
-  
-  if (items.length === 0) {
-    alert("Your cart is empty!");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const orderData = {
-      orderItems: items.map(i => {
-        let finalSize = "Regular"; 
-        if (i.variantSize) {
-          finalSize = i.variantSize;
-        } else if (i.snapshot?.size) {
-          finalSize = Array.isArray(i.snapshot.size) ? i.snapshot.size[0] : i.snapshot.size;
-        }
-
-        return {
-          name: i.snapshot?.name || "Product",
-          quantity: Number(i.qty), 
-          image: i.snapshot?.image || "",
-          price: Number(i.snapshot?.price || 0),
-          size: String(finalSize), 
-          product: i.productId
-        };
-      }),
-      shippingAddress: {
-        phone: formData.phone,
-        city: formData.city,
-        address: formData.address
-      },
-      paymentMethod: "Cash on Delivery",
-      totalPrice: Number(subtotal),
-      guestInfo: !user ? { name: formData.name, email: formData.email } : null
-    };
-
-    console.log("Submitting Order Data:", orderData);
-
-    // ১. সার্ভিস কল করা (অপেক্ষা করা)
-    const result = await orderService.createOrder(orderData);
+    e.preventDefault();
     
-    // কনসোলে চেক করা সার্ভার থেকে কী এলো
-    console.log("Order Result in Component:", result);
-
-    // ২. অর্ডার আইডি বের করার জন্য ফেইল-সেফ লজিক
-    // ব্যাকএন্ড যেভাবে ডাটা পাঠাক না কেন, এখান থেকে আইডি খুঁজে বের করবে
-    const newOrderId = 
-      result?._id || 
-      result?.order?._id || 
-      result?.data?._id || 
-      result?.data?.order?._id ||
-      (typeof result === 'string' ? result : null);
-
-    if (newOrderId) {
-      console.log("Success! Redirecting to ID:", newOrderId);
-      clearCart();
-      
-      // ৩. নেভিগেশনে সামান্য ডিলে দেওয়া যাতে স্টেট ক্লিন হওয়ার সময় পায়
-      setTimeout(() => {
-        navigate(`/track-order/${newOrderId}`);
-      }, 100);
-      
-    } else {
-      // যদি ডাটা আসে কিন্তু আইডি না পাওয়া যায়
-      console.error("Order ID not found in response object. Check your backend response structure.", result);
-      
-      // যদি result আনডিফাইনড হয়, তার মানে সার্ভিস থেকে return করা হয়নি
-      if (!result) {
-        alert("Error: No response from server. Check order.service.js return statement.");
-      } else {
-        alert("Order Placed, but couldn't get ID for tracking.");
-        clearCart();
-        navigate('/products');
-      }
+    if (items.length === 0) {
+      alert("Your cart is empty!");
+      return;
     }
-    
-  } catch (error) {
-    console.error("Checkout Error:", error);
-    const errorMsg = error.response?.data?.message || error.message || "Order failed to place.";
-    alert(`Error: ${errorMsg}`);
-  } finally {
-    setLoading(false);
+
+    setLoading(true);
+
+    try {
+      const orderData = {
+        orderItems: items.map(i => {
+          let finalSize = "Regular"; 
+          if (i.variantSize) {
+            finalSize = i.variantSize;
+          } else if (i.snapshot?.size) {
+            finalSize = Array.isArray(i.snapshot.size) ? i.snapshot.size[0] : i.snapshot.size;
+          }
+
+          return {
+            name: i.snapshot?.name || "Product",
+            quantity: Number(i.qty), 
+            image: i.snapshot?.image || "",
+            price: Number(i.snapshot?.price || 0),
+            size: String(finalSize), 
+            product: i.productId
+          };
+        }),
+        shippingAddress: {
+          phone: formData.phone,
+          city: formData.city,
+          address: formData.address
+        },
+        paymentMethod: "Cash on Delivery",
+        totalPrice: Number(subtotal),
+        
+        // সমাধান: ইউজার লগইন থাক বা না থাক, সরাসরি ফরমের ডাটা (formData) থেকে নাম ও ইমেইল পাঠানো হচ্ছে।
+        // এতে ইউজার এডিট করলে সেই এডিট করা তথ্যই ডাটাবেসে সেভ হবে।
+        guestInfo: { 
+          name: formData.name, 
+          email: formData.email 
+        }
+      };
+
+      const result = await orderService.createOrder(orderData);
+      
+      if (result) {
+        clearCart();
+        setIsSuccess(true); 
+        window.scrollTo(0, 0); 
+      }
+      
+    } catch (error) {
+      console.error("Checkout Error:", error);
+      const errorMsg = error.response?.data?.message || error.message || "Order failed to place.";
+      alert(`Error: ${errorMsg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- সাকসেস ভিউ (অর্ডার কনফার্ম হওয়ার পর এটি দেখাবে) ---
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-[#080808] flex items-center justify-center p-6 selection:bg-amber-300 selection:text-black">
+        <div className="max-w-md w-full bg-white/[0.03] border border-white/10 p-10 rounded-[3rem] backdrop-blur-2xl text-center space-y-8 animate-in fade-in zoom-in duration-500">
+          
+          <div className="relative mx-auto w-24 h-24">
+            <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full animate-pulse" />
+            <div className="relative bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-12 h-12 text-emerald-500" />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic leading-none">
+              Success!
+            </h1>
+            <p className="text-amber-300 font-bold tracking-[0.3em] text-[10px] uppercase">
+              Order Placed Successfully
+            </p>
+            <div className="h-px w-12 bg-white/10 mx-auto my-6" />
+            <p className="text-white/50 text-sm leading-relaxed px-4">
+              ধন্যবাদ! আপনার অর্ডারটি আমরা পেয়েছি। কিছুক্ষণের মধ্যে আমাদের প্রতিনিধি আপনার নাম্বারে কল করে অর্ডারটি নিশ্চিত করবেন।
+            </p>
+          </div>
+
+          <div className="bg-black/40 border border-white/5 p-5 rounded-[2rem] flex items-center gap-4 text-left group hover:border-amber-300/20 transition-colors">
+            <div className="bg-amber-300/10 p-3 rounded-2xl group-hover:scale-110 transition-transform">
+              <PhoneCall className="text-amber-300" size={20} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Next Step</p>
+              <p className="text-xs font-bold text-white/80">কলের জন্য ফোনের পাশে থাকুন</p>
+            </div>
+          </div>
+
+          <div className="pt-4">
+            <button 
+              onClick={() => navigate('/')}
+              className="w-full group relative flex items-center justify-center gap-3 bg-amber-300 hover:bg-white text-black py-5 rounded-[2rem] font-black transition-all duration-500 uppercase text-xs tracking-widest active:scale-95"
+            >
+              <Home size={18} className="group-hover:-translate-y-1 transition-transform" />
+              Go Back Home
+              <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    );
   }
-};
 
   return (
     <div className="min-h-screen bg-[#080808] text-white p-6 pt-28 selection:bg-amber-300 selection:text-black">
@@ -248,57 +286,5 @@ const Checkout = () => {
     </div>
   );
 };
-
-if (isSuccess) {
-  return (
-    <div className="min-h-screen bg-[#080808] flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white/5 border border-white/10 p-10 rounded-[3rem] backdrop-blur-2xl text-center space-y-8">
-        
-        {/* Animated Icon Container */}
-        <div className="relative mx-auto w-24 h-24">
-          <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full animate-pulse" />
-          <div className="relative bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-full flex items-center justify-center">
-            <CheckCircle className="w-12 h-12 text-emerald-500" />
-          </div>
-        </div>
-
-        {/* Text Content */}
-        <div className="space-y-3">
-          <h1 className="text-3xl font-black text-white uppercase tracking-tighter italic">
-            Congratulations!
-          </h1>
-          <p className="text-amber-300 font-bold tracking-widest text-[10px] uppercase">
-            Thank you for your order
-          </p>
-          <div className="h-px w-12 bg-white/10 mx-auto my-4" />
-          <p className="text-white/50 text-sm leading-relaxed">
-            আপনার অর্ডারটি আমরা পেয়েছি। কিছুক্ষণের মধ্যে আমাদের প্রতিনিধি আপনার নাম্বারে কল করে অর্ডারটি নিশ্চিত করবেন।
-          </p>
-        </div>
-
-        {/* Info Card */}
-        <div className="bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-4 text-left">
-          <div className="bg-amber-300/10 p-3 rounded-xl">
-            <PhoneCall className="text-amber-300" size={20} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Next Step</p>
-            <p className="text-xs font-bold text-white/80">কলের জন্য অপেক্ষা করুন</p>
-          </div>
-        </div>
-
-        {/* Action Button */}
-        <button 
-          onClick={() => navigate('/')}
-          className="w-full group relative flex items-center justify-center gap-3 bg-amber-300 hover:bg-white text-black py-5 rounded-2xl font-black transition-all duration-500 uppercase text-xs tracking-widest overflow-hidden"
-        >
-          <Home size={18} className="group-hover:-translate-y-1 transition-transform" />
-          Go Back Home
-        </button>
-        
-      </div>
-    </div>
-  );
-}
 
 export default Checkout;

@@ -10,6 +10,35 @@ const getStats = async () => {
   }
 };
 
+// --- User Management ---
+const getAllUsers = async () => {
+  try {
+    const response = await api.get("/admin/users");
+    return response?.data || response;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error;
+  }
+};
+
+const updateUserByAdmin = async (id, userData) => {
+  try {
+    return await api.put(`/admin/users/${id}`, userData);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
+
+const deleteUser = async (id) => {
+  try {
+    return await api.del(`/admin/users/${id}`); 
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw error;
+  }
+};
+
 // --- Product Management ---
 const uploadProduct = async (formData) => {
   try {
@@ -50,7 +79,6 @@ const deleteProduct = async (id) => {
 const getAllProductsAdmin = async () => {
   try {
     const response = await api.get("/products");
-    console.log("API Response in Service:", response); 
     return response;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -81,6 +109,9 @@ const updateOrderStatus = async (id, status) => {
 // --- Export Section ---
 const adminService = {
   getStats,
+  getAllUsers,      
+  updateUserByAdmin, 
+  deleteUser,        
   uploadProduct,
   getProductByIdAdmin, 
   updateProduct,      
@@ -90,6 +121,6 @@ const adminService = {
   updateOrderStatus 
 };
 
-export { getAllOrders, updateOrderStatus };
+export { getAllOrders, updateOrderStatus, getAllUsers, updateUserByAdmin, deleteUser };
 
 export default adminService;

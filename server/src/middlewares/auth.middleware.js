@@ -43,10 +43,10 @@ export const optionalProtect = asyncHandler(async (req, res, next) => {
 
 // Only admin users (Admin Routes)
 export const admin = (req, res, next) => {
-  if (req.user && req.user.isAdmin) {
+  if (req.user && (req.user.isAdmin || req.user.role === "Admin")) {
     next();
   } else {
-    res.status(401);
-    throw new Error("Not authorized as an admin");
+    res.status(403); 
+    throw new Error("Not authorized as an admin. Access denied!");
   }
 };

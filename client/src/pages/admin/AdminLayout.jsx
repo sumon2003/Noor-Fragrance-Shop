@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -8,11 +8,18 @@ import {
   LogOut,
   ChevronRight
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext'; 
 
 const AdminLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth(); 
 
-  const isActive = (path) => location.pathname === path;
+  // smarter active link detection
+  const isActive = (path) => {
+    if (path === '/admin') return location.pathname === '/admin';
+    return location.pathname.startsWith(path);
+  };
 
   const navLinks = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -21,16 +28,21 @@ const AdminLayout = () => {
     { name: 'Users', path: '/admin/users', icon: Users },
   ];
 
+  const handleLogout = () => {
+    logout(); 
+    navigate('/login'); 
+  };
+
   return (
     <div className="flex min-h-screen bg-[#070707] text-white selection:bg-amber-300 selection:text-black">
       
-      {/* Sidebar - */}
+      {/* Sidebar */}
       <aside className="w-72 bg-black/40 border-r border-amber-300/10 p-8 flex flex-col sticky top-0 h-screen backdrop-blur-2xl">
         
         {/* Admin Logo & Branding */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-amber-300 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-amber-300 rounded-lg flex items-center justify-center cursor-pointer" onClick={() => navigate('/')}>
               <span className="text-black font-black text-xs italic">NF</span>
             </div>
             <h1 className="text-2xl font-black text-white italic tracking-tighter uppercase">
@@ -61,13 +73,11 @@ const AdminLayout = () => {
           ))}
         </nav>
 
-        {/* Bottom Section: Logout/Profile Info */}
+        {/* Bottom Section: Logout */}
         <div className="pt-8 border-t border-amber-300/10">
           <button 
             className="w-full flex items-center gap-4 p-4 rounded-[1.5rem] text-red-500/40 hover:bg-red-500/5 hover:text-red-400 transition-all duration-300 group font-black uppercase tracking-[0.15em] text-[10px]"
-            onClick={() => {
-              console.log("Admin Logged Out");
-            }}
+            onClick={handleLogout}
           >
             <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
             Logout Session
@@ -75,8 +85,8 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* Main Content Area - */}
-      <main className="flex-1 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-amber-300/[0.02] via-transparent to-transparent">
+      {/* Main Content Area */}
+      <main className="flex-1 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-amber-300/[0.02] via-transparent to-transparent overflow-y-auto">
         <div className="max-w-[1400px] mx-auto p-10">
           <Outlet />
         </div>

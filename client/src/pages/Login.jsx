@@ -8,6 +8,7 @@ export default function Login() {
   const nav = useNavigate();
   const { login } = useAuth();
 
+  // default values 
   const [email, setEmail] = useState("sumonkhanbd2003@gmail.com"); 
   const [password, setPassword] = useState("123456");
   const [loading, setLoading] = useState(false);
@@ -17,16 +18,17 @@ export default function Login() {
     e.preventDefault();
     setErr("");
     setLoading(true);
+    
     try {
       const data = await login({ email, password });
       
-      if (data?.user?.isAdmin) {
+      if (data?.user?.role === 'admin' || data?.user?.isAdmin) {
         nav("/admin", { replace: true });
       } else {
         nav("/", { replace: true });
       }
     } catch (e2) {
-      setErr(e2.response?.data?.message || e2.message || "Login failed");
+      setErr(e2.message || "Invalid credentials or Server unreachable");
     } finally {
       setLoading(false);
     }
@@ -41,7 +43,7 @@ export default function Login() {
           <p className="mt-2 text-amber-50/60 text-sm">Access your Noor Fragrance account</p>
 
           {err && (
-            <div className="mt-6 rounded-2xl bg-red-500/10 ring-1 ring-red-500/20 p-4 text-red-200 text-sm">
+            <div className="mt-6 rounded-2xl bg-red-500/10 ring-1 ring-red-500/20 p-4 text-red-200 text-sm animate-pulse">
               {err}
             </div>
           )}

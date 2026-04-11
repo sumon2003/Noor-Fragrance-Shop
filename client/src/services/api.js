@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://noor-aroma.vercel.app/api";
 
 export function getToken() {
   return localStorage.getItem("token") || "";
@@ -14,30 +14,34 @@ async function request(path, options = {}) {
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  // FormData 
   const isFormData = options.body instanceof FormData;
   if (!isFormData) {
     headers["Content-Type"] = "application/json";
   }
 
   const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-  const url = API_BASE.endsWith('/') ? `${API_BASE}${cleanPath}` : `${API_BASE}/${cleanPath}`;
+  const baseUrl = API_BASE.endsWith('/') ? API_BASE : `${API_BASE}/`;
+  const url = `${baseUrl}${cleanPath}`;
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    body: isFormData ? options.body : (options.body ? JSON.stringify(options.body) : undefined),
-  });
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      body: isFormData ? options.body : (options.body ? JSON.stringify(options.body) : undefined),
+    });
 
-  // JSON parse safely 
-  const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch(() => ({}));
 
-  if (!res.ok) {
-    const msg = data?.message || `Request failed (${res.status})`;
-    throw new Error(msg);
+    if (!res.ok) {
+      const msg = data?.message || `Request failed (${res.status})`;
+      throw new Error(msg);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("API Request Error:", error.message);
+    throw error;
   }
-
-  return data;
 }
 
 export const api = {

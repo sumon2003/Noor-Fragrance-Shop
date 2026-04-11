@@ -7,22 +7,36 @@ import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
-// CORS configuration
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://noor-aroma-shop.vercel.app"
+];
+
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || ["http://localhost:5173", "https://noor-aroma-shop.vercel.app"],
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
-// api routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes); 
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 
-// health check route
 app.get("/", (req, res) => {
   res.json({ 
     status: "Success",

@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://noor-aroma.vercel.app/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://noor-aroma.vercel.app";
 
 export function getToken() {
   return localStorage.getItem("token") || "";

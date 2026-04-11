@@ -58,7 +58,7 @@ export default function Hero() {
             <div className="rounded-3xl overflow-hidden bg-black/20 ring-1 ring-amber-300/15 h-[280px] md:h-[420px]">
               
               <img
-                src="public/hero1.jpg"
+                src="/hero1.jpg"
                 alt="Premium Attar"
                 className="h-full w-full object-cover"
               />

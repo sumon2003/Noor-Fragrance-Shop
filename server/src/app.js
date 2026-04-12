@@ -9,7 +9,8 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://noor-aroma-shop.vercel.app"
+  "https://noor-aroma-shop.vercel.app",
+  "https://noor-aroma.vercel.app"
 ];
 
 if (process.env.CLIENT_URL) {

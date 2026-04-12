@@ -16,6 +16,7 @@ import AddProduct from "./pages/admin/AddProduct";
 import EditProduct from "./pages/admin/EditProduct";
 import AdminOrders from "./pages/admin/Orders"; 
 import AdminUsers from "./pages/admin/AdminUsers"; 
+import AdminComments from "./pages/admin/AdminComments";
 
 import { useAuth } from './context/AuthContext';
 
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="products/add" element={<AddProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
         <Route path="orders" element={<AdminOrders />} /> 
+        <Route path="comments" element={<AdminComments />} />
         
         {/* --- User Management Route (Updated) --- */}
         <Route path="users" element={<AdminUsers />} /> 

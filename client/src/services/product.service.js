@@ -1,4 +1,4 @@
-// client/src/services/product.service.js
+import { api } from "../api";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:5000";
@@ -40,3 +40,11 @@ export async function fetchProductBySlug(slug) {
   const res = await fetch(`${PRODUCTS_BASE}/slug/${slug}`);
   return handle(res);
 }
+
+export const commentService = {
+  // 1. (Public Action)
+  getComments: (productId) => api.get(`/comments/product/${productId}`),
+
+  // 2. (User Action)
+  submitComment: (commentData) => api.post(`/comments`, commentData),
+};

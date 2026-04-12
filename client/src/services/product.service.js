@@ -1,4 +1,4 @@
-import { api } from "../api";
+import { api } from "./api";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:5000";

@@ -4,7 +4,7 @@ import { ChevronLeft, ShoppingCart, Wind, Heart, Anchor, List, Star } from "luci
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { fetchProductById } from "../services/product.service";
-import { commentService } from "../services/comment.service"; 
+import { commentService } from "../services/comment.service";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext"; 
 

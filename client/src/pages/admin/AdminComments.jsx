@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { commentService } from "../services/comment.service";
+import { commentService } from "../../services/comment.service";
 import { Check, X, Trash2, MessageSquare, Star } from "lucide-react";
 
 export default function AdminComments() {

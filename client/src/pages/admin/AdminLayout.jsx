@@ -6,7 +6,8 @@ import {
   ClipboardList, 
   Users, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  MessageSquare 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext'; 
 
@@ -26,6 +27,7 @@ const AdminLayout = () => {
     { name: 'Products', path: '/admin/products', icon: ShoppingBag },
     { name: 'Orders', path: '/admin/orders', icon: ClipboardList }, 
     { name: 'Users', path: '/admin/users', icon: Users },
+    { name: 'Reviews', path: '/admin/comments', icon: MessageSquare }, 
   ];
 
   const handleLogout = () => {

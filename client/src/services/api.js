@@ -19,9 +19,18 @@ async function request(path, options = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-  const baseUrl = API_BASE.endsWith('/') ? API_BASE : `${API_BASE}/`;
+  // --- SMART PATH LOGIC START ---
+  let cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  
+  let base = API_BASE.replace(/\/api\/?$/, ""); 
+
+  if (!cleanPath.startsWith('api/')) {
+    cleanPath = `api/${cleanPath}`;
+  }
+
+  const baseUrl = base.endsWith('/') ? base : `${base}/`;
   const url = `${baseUrl}${cleanPath}`;
+  // --- SMART PATH LOGIC END ---
 
   try {
     const res = await fetch(url, {
